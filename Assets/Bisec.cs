@@ -31,6 +31,7 @@ public class Bisec : MonoBehaviour {
 
     private void NewMeshBuild()
     {
+        // Create the line lookup table
         lineLookupTable = new int[targetMesh.vertexCount][];
         for (int i = 0; i < lineLookupTable.Length; i++)
         {
@@ -40,6 +41,9 @@ public class Bisec : MonoBehaviour {
                 lineLookupTable[i][j] = -1;
             }
         }
+
+        // Mark the mesh as dynamic
+        targetMesh.MarkDynamic();
     }
 
     /*
@@ -59,12 +63,8 @@ public class Bisec : MonoBehaviour {
         Vector3 translationSide = bisectPlane.location + translation;
 
         // Mesh Information
-        Vector3[] verts = targetMesh.vertices;
-        int[] triangles = targetMesh.triangles;
-
-        // New Mesh Additions
-        List<Vector3> newVerts = new List<Vector3>();
-        List<int> newTriangles = new List<int>();
+        List<Vector3> newVerts = new List<Vector3>(targetMesh.vertices);
+        List<int> newTriangles = new List<int>(targetMesh.triangles);
 
         // Intersections
         Vector3[] intersectons = new Vector3[3];
@@ -72,17 +72,21 @@ public class Bisec : MonoBehaviour {
         // Points
         int[] pi = new int[3];
         Vector3[] pv = new Vector3[3];
+        bool[] lineReform = new bool[3];
 
         // Iterate through all triangles
-        for (int i = 0; i < triangles.Length; i += 3)
+        for (int i = 0; i < targetMesh.triangles.Length; i += 3)
         {
             // Get intersection of triangles and plane
-            pi[0] = triangles[i];
-            pi[1] = triangles[i + 1];
-            pi[2] = triangles[i + 2];
-            pv[0] = verts[pi[0]];
-            pv[1] = verts[pi[1]];
-            pv[2] = verts[pi[2]];
+            pi[0] = targetMesh.triangles[i];
+            pi[1] = targetMesh.triangles[i + 1];
+            pi[2] = targetMesh.triangles[i + 2];
+            pv[0] = targetMesh.vertices[pi[0]];
+            pv[1] = targetMesh.vertices[pi[1]];
+            pv[2] = targetMesh.vertices[pi[2]];
+            lineReform[0] = false;
+            lineReform[1] = false;
+            lineReform[2] = false;
 
             // Iterate through each line
             for (int j = 0; j < 3; j++)
@@ -100,14 +104,14 @@ public class Bisec : MonoBehaviour {
                 else if (ind == -1)
                 {
                     // Look for an intersection
-                    if (PlaneSegmentIntersection(
-                        bisectPlane, 
-                        pv[pi[j]], 
-                        pv[pi[jpo]], 
-                        out intersectons[j]) == 1)
+                    if (PlaneSegmentIntersection(bisectPlane, pv[j], pv[jpo], out intersectons[j]) == 1)
                     {
                         // Set the lookup table for intersects
-                        SetLineIntersect(pi[j], pi[jpo], verts.Length + newVerts.Count);
+                        ind = newVerts.Count;
+                        SetLineIntersect(pi[j], pi[jpo], ind);
+
+                        // This line needs to be re-formed later
+                        lineReform[j] = true;
 
                         // Generate new vertices
                         newVerts.Add(new Vector3(
@@ -116,33 +120,87 @@ public class Bisec : MonoBehaviour {
                             intersectons[j].z));
                         newVerts.Add(new Vector3(
                             intersectons[j].x + translation.x, 
-                            intersectons[j].y + translation.y,
+                            intersectons[j].y + translation.y, 
                             intersectons[j].z + translation.z));
-
-                        // Move original vertex that is on the "expanding" side
-                        // by specified translation
-                        if (uPlane.SameSide(pv[j], translationSide))
-                        {
-                            pv[j] += translation;
-                        }
-                        else
-                        {
-                            pv[jpo] += translation;
-                        }
                     }
                     // If no bisection, continue
                     else
                     {
                         SetLineIntersect(pi[j], pi[jpo], -2);
-                        intersectons[j] = Vector3.zero;
                         continue;
                     }
                 }
-                
-                // If done previously, with an intersection
+                else
+                {
+                    // If done previously, with an intersection
+                    lineReform[j] = true;
+                }
                 
             } // END OF LINE ITERATION
+
+            // Check if the triangle needs reformation
+            if (!lineReform[0] & !lineReform[1])
+                continue;
+
+            // Now that we've finished the lines of the triangles, we need to
+            // re-form the triangle
+
+            // Find the point that is on it's own
+            int singleInd = -1;
+            for (singleInd = 0; singleInd < 3; singleInd++)
+            {
+                if (!lineReform[singleInd])
+                {
+                    singleInd = (singleInd + 2) % 3;
+                    break;
+                }
+            }
+
+            int translatedVertex = uPlane.SameSide(pv[singleInd], translationSide) ? 1 : 0;
+
+            int single1 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 1) % 3]);
+            int single2 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 2) % 3]);
+
+            // Remake the "tip" of the triangle
+            newTriangles[i] = pi[singleInd];
+            newTriangles[i + 1] = single1 + translatedVertex;
+            newTriangles[i + 2] = single2 + translatedVertex;
+
+            // Make the new quad bridging the parts of the triangle
+            newTriangles.Add(single1 + translatedVertex);
+            newTriangles.Add(single1 + (1 - translatedVertex));
+            newTriangles.Add(single2 + (1 - translatedVertex));
+            newTriangles.Add(single2 + translatedVertex);
+            newTriangles.Add(single1 + translatedVertex);
+            newTriangles.Add(single2 + (1 - translatedVertex));
+
+            // Make the quad "base" of the bisected triangle
+            newTriangles.Add(pi[(singleInd + 1) % 3]);
+            newTriangles.Add(pi[(singleInd + 2) % 3]);
+            newTriangles.Add(single1 + (1 - translatedVertex));
+            newTriangles.Add(single2 + (1 - translatedVertex));
+            newTriangles.Add(single1 + (1 - translatedVertex));
+            newTriangles.Add(pi[(singleInd + 2) % 3]);
+            
+        } // END OF TRIANGLE ITERATION
+
+
+        // Add a translation to all the 
+        for (int i = 0; i < targetMesh.vertices.Length; i++)
+        {
+            // Move original vertex that is on the "expanding" side
+            // by specified translation
+            if (uPlane.SameSide(newVerts[i], translationSide))
+            {
+                newVerts[i] += translation;
+            }
         }
+
+        targetMesh.SetVertices(newVerts);
+        targetMesh.SetTriangles(newTriangles, 0);
+
+        targetMesh.RecalculateNormals();
+        targetMesh.RecalculateTangents();
     }
 
     /*
