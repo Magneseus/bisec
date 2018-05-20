@@ -58,9 +58,21 @@ public class Bisec : MonoBehaviour {
         if (targetMesh == null)
             return;
 
+        // Transform the plane to local space for the mesh
+        b_Plane bisectPlaneLocal;
+        bisectPlaneLocal.location = this.transform.worldToLocalMatrix.MultiplyPoint(bisectPlane.location);
+        bisectPlaneLocal.normal = this.transform.worldToLocalMatrix.rotation * bisectPlane.normal;
+
+        // Transform translation to local space
+        translation = this.transform.worldToLocalMatrix.MultiplyPoint(translation);
+
+        Debug.Log(this.transform.worldToLocalMatrix);
+        Debug.Log(bisectPlane.location);
+        Debug.Log(bisectPlaneLocal.location);
+
         // Unity plane for ease of use
-        Plane uPlane = new Plane(bisectPlane.normal, bisectPlane.location);
-        Vector3 translationSide = bisectPlane.location + translation;
+        Plane uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
+        Vector3 translationSide = bisectPlaneLocal.location + translation;
 
         // Mesh Information
         List<Vector3> newVerts = new List<Vector3>(targetMesh.vertices);
@@ -104,7 +116,7 @@ public class Bisec : MonoBehaviour {
                 else if (ind == -1)
                 {
                     // Look for an intersection
-                    if (PlaneSegmentIntersection(bisectPlane, pv[j], pv[jpo], out intersectons[j]) == 1)
+                    if (PlaneSegmentIntersection(bisectPlaneLocal, pv[j], pv[jpo], out intersectons[j]) == 1)
                     {
                         // Set the lookup table for intersects
                         ind = newVerts.Count;
