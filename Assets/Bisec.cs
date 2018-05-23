@@ -11,10 +11,8 @@ public class Bisec : MonoBehaviour {
     }
 
     private Mesh targetMesh;
-
     private int[][] lineLookupTable;
-
-	// 
+    
 	void Start () {
         targetMesh = GetComponent<MeshFilter>().mesh;
 
@@ -46,6 +44,17 @@ public class Bisec : MonoBehaviour {
         targetMesh.MarkDynamic();
     }
 
+    public void Expand(b_Plane bisectPlane, b_Plane bisectPlane2)
+    {
+        Bisect(bisectPlane, bisectPlane2, true);
+    }
+
+    public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2)
+    {
+        Bisect(bisectPlane, bisectPlane2, false);
+    }
+
+
     /*
      * When expanding, should achieve a O(n) time, but could possibly reduce
      * by treating like a graph, jumping through nodes and only taking ones
@@ -53,26 +62,26 @@ public class Bisec : MonoBehaviour {
      * 
      * Will have a edge case where line is laying on the plane?
      */
-    public void Expand(b_Plane bisectPlane, Vector3 translation)
+    private void Bisect(b_Plane bisectPlane, b_Plane bisectPlane2, bool expand)
     {
         if (targetMesh == null)
             return;
 
-        // Transform the plane to local space for the mesh
-        b_Plane bisectPlaneLocal;
+        // Transform the planes to local space for the mesh
+        b_Plane bisectPlaneLocal, bisectPlaneLocal2;
         bisectPlaneLocal.location = this.transform.worldToLocalMatrix.MultiplyPoint(bisectPlane.location);
         bisectPlaneLocal.normal = this.transform.worldToLocalMatrix.rotation * bisectPlane.normal;
+        bisectPlaneLocal2.location = this.transform.worldToLocalMatrix.MultiplyPoint(bisectPlane2.location);
+        bisectPlaneLocal2.normal = this.transform.worldToLocalMatrix.rotation * bisectPlane2.normal;
 
         // Transform translation to local space
-        translation = this.transform.worldToLocalMatrix.MultiplyPoint(translation);
+        Vector3 expandTranslation = bisectPlane2.location - bisectPlane.location;
+        expandTranslation = this.transform.worldToLocalMatrix.MultiplyPoint(expandTranslation);
 
-        Debug.Log(this.transform.worldToLocalMatrix);
-        Debug.Log(bisectPlane.location);
-        Debug.Log(bisectPlaneLocal.location);
-
-        // Unity plane for ease of use
+        // Unity planes for ease of use
         Plane uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
-        Vector3 translationSide = bisectPlaneLocal.location + translation;
+        Vector3 expandTranslationSide = bisectPlaneLocal.location + expandTranslation;
+        Plane uPlane2 = new Plane(bisectPlaneLocal2.normal, bisectPlaneLocal2.location);
 
         // Mesh Information
         List<Vector3> newVerts = new List<Vector3>(targetMesh.vertices);
@@ -130,10 +139,14 @@ public class Bisec : MonoBehaviour {
                             intersectons[j].x, 
                             intersectons[j].y, 
                             intersectons[j].z));
-                        newVerts.Add(new Vector3(
-                            intersectons[j].x + translation.x, 
-                            intersectons[j].y + translation.y, 
-                            intersectons[j].z + translation.z));
+
+                        if (expand)
+                        {
+                            newVerts.Add(new Vector3(
+                                intersectons[j].x + expandTranslation.x,
+                                intersectons[j].y + expandTranslation.y,
+                                intersectons[j].z + expandTranslation.z));
+                        }
                     }
                     // If no bisection, continue
                     else
@@ -156,55 +169,26 @@ public class Bisec : MonoBehaviour {
 
             // Now that we've finished the lines of the triangles, we need to
             // re-form the triangle
-
-            // Find the point that is on it's own
-            int singleInd = -1;
-            for (singleInd = 0; singleInd < 3; singleInd++)
+            if (expand)
             {
-                if (!lineReform[singleInd])
-                {
-                    singleInd = (singleInd + 2) % 3;
-                    break;
-                }
+                Expand_PostTriangleDelegate(pi, pv, lineReform, uPlane, expandTranslationSide, newTriangles, i);
             }
-
-            int translatedVertex = uPlane.SameSide(pv[singleInd], translationSide) ? 1 : 0;
-
-            int single1 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 1) % 3]);
-            int single2 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 2) % 3]);
-
-            // Remake the "tip" of the triangle
-            newTriangles[i] = pi[singleInd];
-            newTriangles[i + 1] = single1 + translatedVertex;
-            newTriangles[i + 2] = single2 + translatedVertex;
-
-            // Make the new quad bridging the parts of the triangle
-            newTriangles.Add(single1 + translatedVertex);
-            newTriangles.Add(single1 + (1 - translatedVertex));
-            newTriangles.Add(single2 + (1 - translatedVertex));
-            newTriangles.Add(single2 + translatedVertex);
-            newTriangles.Add(single1 + translatedVertex);
-            newTriangles.Add(single2 + (1 - translatedVertex));
-
-            // Make the quad "base" of the bisected triangle
-            newTriangles.Add(pi[(singleInd + 1) % 3]);
-            newTriangles.Add(pi[(singleInd + 2) % 3]);
-            newTriangles.Add(single1 + (1 - translatedVertex));
-            newTriangles.Add(single2 + (1 - translatedVertex));
-            newTriangles.Add(single1 + (1 - translatedVertex));
-            newTriangles.Add(pi[(singleInd + 2) % 3]);
+            else
+            {
+                Contract_PostTriangleDelegate();
+            }
             
         } // END OF TRIANGLE ITERATION
 
 
-        // Add a translation to all the 
+        // Add a translation to all the required vertices
         for (int i = 0; i < targetMesh.vertices.Length; i++)
         {
             // Move original vertex that is on the "expanding" side
             // by specified translation
-            if (uPlane.SameSide(newVerts[i], translationSide))
+            if (uPlane.SameSide(newVerts[i], expandTranslationSide))
             {
-                newVerts[i] += translation;
+                newVerts[i] += expandTranslation;
             }
         }
 
@@ -213,6 +197,51 @@ public class Bisec : MonoBehaviour {
 
         targetMesh.RecalculateNormals();
         targetMesh.RecalculateTangents();
+    }
+
+    private void Expand_PostTriangleDelegate(int[] pi, Vector3[] pv, bool[] lineReform, Plane uPlane, Vector3 expandTranslationSide, List<int> newTriangles, int i)
+    {
+        // Find the point that is on it's own
+        int singleInd = -1;
+        for (singleInd = 0; singleInd < 3; singleInd++)
+        {
+            if (!lineReform[singleInd])
+            {
+                singleInd = (singleInd + 2) % 3;
+                break;
+            }
+        }
+
+        int translatedVertex = uPlane.SameSide(pv[singleInd], expandTranslationSide) ? 1 : 0;
+
+        int single1 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 1) % 3]);
+        int single2 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 2) % 3]);
+
+        // Remake the "tip" of the triangle
+        newTriangles[i] = pi[singleInd];
+        newTriangles[i + 1] = single1 + translatedVertex;
+        newTriangles[i + 2] = single2 + translatedVertex;
+
+        // Make the new quad bridging the parts of the triangle
+        newTriangles.Add(single1 + translatedVertex);
+        newTriangles.Add(single1 + (1 - translatedVertex));
+        newTriangles.Add(single2 + (1 - translatedVertex));
+        newTriangles.Add(single2 + translatedVertex);
+        newTriangles.Add(single1 + translatedVertex);
+        newTriangles.Add(single2 + (1 - translatedVertex));
+
+        // Make the quad "base" of the bisected triangle
+        newTriangles.Add(pi[(singleInd + 1) % 3]);
+        newTriangles.Add(pi[(singleInd + 2) % 3]);
+        newTriangles.Add(single1 + (1 - translatedVertex));
+        newTriangles.Add(single2 + (1 - translatedVertex));
+        newTriangles.Add(single1 + (1 - translatedVertex));
+        newTriangles.Add(pi[(singleInd + 2) % 3]);
+    }
+
+    private void Contract_PostTriangleDelegate()
+    {
+
     }
 
     /*

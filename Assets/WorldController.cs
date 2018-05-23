@@ -10,6 +10,7 @@ public class WorldController : MonoBehaviour
 
     private Vector3 translate;
     private Bisec.b_Plane plane_;
+    private Bisec.b_Plane plane2_;
 
     private List<int> oldTriangles;
     private List<Vector3> oldVerts;
@@ -32,7 +33,11 @@ public class WorldController : MonoBehaviour
             plane_.normal = Vector3.up;
             plane_.normal = planeOne.transform.rotation * plane_.normal;
 
-            cube.Expand(plane_, translate);
+            plane2_.location = planeTwo.transform.position;
+            plane2_.normal = Vector3.up;
+            plane2_.normal = planeOne.transform.rotation * plane2_.normal;
+
+            cube.Expand(plane_, plane2_);
         }
 
         if (Input.GetKeyDown(KeyCode.R))
