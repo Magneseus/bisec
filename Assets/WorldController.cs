@@ -37,7 +37,8 @@ public class WorldController : MonoBehaviour
             plane2_.normal = Vector3.up;
             plane2_.normal = planeOne.transform.rotation * plane2_.normal;
 
-            cube.Expand(plane_, plane2_);
+            //cube.Expand(plane_, plane2_);
+            cube.Contract(plane_, plane2_, false);
         }
 
         if (Input.GetKeyDown(KeyCode.R))

@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * TODO:
+ *  - replace the LineLookup array with a sparse structure
+ */
+
 public class Bisec : MonoBehaviour {
 
     public struct b_Plane
@@ -12,8 +17,22 @@ public class Bisec : MonoBehaviour {
 
     private Mesh targetMesh;
     private int[][] lineLookupTable;
-    
-	void Start () {
+
+    // Deformation vars
+    private b_Plane bisectPlaneLocal;
+    private Plane uPlane;
+    private Vector3 translation;
+    private Vector3 translationSide;
+
+    private List<Vector3> newVerts;
+    private List<int> newTriangles;
+
+    private Vector3[] intersections;
+    private int[] pi;
+    private Vector3[] pv;
+    private bool[] lineReform;
+
+    void Start () {
         targetMesh = GetComponent<MeshFilter>().mesh;
 
         // No Mesh target
@@ -49,7 +68,7 @@ public class Bisec : MonoBehaviour {
         Bisect(bisectPlane, bisectPlane2, true);
     }
 
-    public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2)
+    public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2, bool planesSeparate=true)
     {
         Bisect(bisectPlane, bisectPlane2, false);
     }
@@ -68,32 +87,31 @@ public class Bisec : MonoBehaviour {
             return;
 
         // Transform the planes to local space for the mesh
-        b_Plane bisectPlaneLocal, bisectPlaneLocal2;
+        
         bisectPlaneLocal.location = this.transform.worldToLocalMatrix.MultiplyPoint(bisectPlane.location);
         bisectPlaneLocal.normal = this.transform.worldToLocalMatrix.rotation * bisectPlane.normal;
-        bisectPlaneLocal2.location = this.transform.worldToLocalMatrix.MultiplyPoint(bisectPlane2.location);
-        bisectPlaneLocal2.normal = this.transform.worldToLocalMatrix.rotation * bisectPlane2.normal;
 
         // Transform translation to local space
-        Vector3 expandTranslation = bisectPlane2.location - bisectPlane.location;
-        expandTranslation = this.transform.worldToLocalMatrix.MultiplyPoint(expandTranslation);
+        translation = bisectPlane2.location - bisectPlane.location;
+        translation = this.transform.worldToLocalMatrix.MultiplyPoint(translation);
 
-        // Unity planes for ease of use
-        Plane uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
-        Vector3 expandTranslationSide = bisectPlaneLocal.location + expandTranslation;
-        Plane uPlane2 = new Plane(bisectPlaneLocal2.normal, bisectPlaneLocal2.location);
+        // Unity plane for ease of use
+        uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
+
+        // Translation vector
+        translationSide = bisectPlaneLocal.location + translation;
 
         // Mesh Information
-        List<Vector3> newVerts = new List<Vector3>(targetMesh.vertices);
-        List<int> newTriangles = new List<int>(targetMesh.triangles);
+        newVerts = new List<Vector3>(targetMesh.vertices);
+        newTriangles = new List<int>(targetMesh.triangles);
 
         // Intersections
-        Vector3[] intersectons = new Vector3[3];
+        intersections = new Vector3[3];
 
         // Points
-        int[] pi = new int[3];
-        Vector3[] pv = new Vector3[3];
-        bool[] lineReform = new bool[3];
+        pi = new int[3];
+        pv = new Vector3[3];
+        lineReform = new bool[3];
 
         // Iterate through all triangles
         for (int i = 0; i < targetMesh.triangles.Length; i += 3)
@@ -125,7 +143,7 @@ public class Bisec : MonoBehaviour {
                 else if (ind == -1)
                 {
                     // Look for an intersection
-                    if (PlaneSegmentIntersection(bisectPlaneLocal, pv[j], pv[jpo], out intersectons[j]) == 1)
+                    if (PlaneSegmentIntersection(bisectPlaneLocal, pv[j], pv[jpo], out intersections[j]) == 1)
                     {
                         // Set the lookup table for intersects
                         ind = newVerts.Count;
@@ -134,18 +152,19 @@ public class Bisec : MonoBehaviour {
                         // This line needs to be re-formed later
                         lineReform[j] = true;
 
-                        // Generate new vertices
+                        // Generate new vertex at intersection point
                         newVerts.Add(new Vector3(
-                            intersectons[j].x, 
-                            intersectons[j].y, 
-                            intersectons[j].z));
+                            intersections[j].x,
+                            intersections[j].y,
+                            intersections[j].z));
 
+                        // Make a matching pair vertex at intersection + translation
                         if (expand)
                         {
                             newVerts.Add(new Vector3(
-                                intersectons[j].x + expandTranslation.x,
-                                intersectons[j].y + expandTranslation.y,
-                                intersectons[j].z + expandTranslation.z));
+                                intersections[j].x + translation.x,
+                                intersections[j].y + translation.y,
+                                intersections[j].z + translation.z));
                         }
                     }
                     // If no bisection, continue
@@ -171,24 +190,34 @@ public class Bisec : MonoBehaviour {
             // re-form the triangle
             if (expand)
             {
-                Expand_PostTriangleDelegate(pi, pv, lineReform, uPlane, expandTranslationSide, newTriangles, i);
+                Expand_PostTriangleDelegate(i);
             }
             else
             {
-                Contract_PostTriangleDelegate();
+                Contract_PostTriangleDelegate(i);
             }
             
         } // END OF TRIANGLE ITERATION
 
 
         // Add a translation to all the required vertices
-        for (int i = 0; i < targetMesh.vertices.Length; i++)
+        // or delete if contracting with a single plane
+        for (int i = 0; i < targetMesh.vertexCount; i++)
         {
-            // Move original vertex that is on the "expanding" side
-            // by specified translation
-            if (uPlane.SameSide(newVerts[i], expandTranslationSide))
+            // If we're on the proper side of the plane
+            if (uPlane.SameSide(newVerts[i], translationSide))
             {
-                newVerts[i] += expandTranslation;
+                // Translate the vertex
+                if (expand)
+                {
+                    newVerts[i] += translation;
+                }
+                // Delete the vertex
+                else
+                {
+                    newVerts.RemoveAt(i);
+                    i--;
+                }
             }
         }
 
@@ -199,7 +228,7 @@ public class Bisec : MonoBehaviour {
         targetMesh.RecalculateTangents();
     }
 
-    private void Expand_PostTriangleDelegate(int[] pi, Vector3[] pv, bool[] lineReform, Plane uPlane, Vector3 expandTranslationSide, List<int> newTriangles, int i)
+    private void Expand_PostTriangleDelegate(int i)
     {
         // Find the point that is on it's own
         int singleInd = -1;
@@ -212,7 +241,7 @@ public class Bisec : MonoBehaviour {
             }
         }
 
-        int translatedVertex = uPlane.SameSide(pv[singleInd], expandTranslationSide) ? 1 : 0;
+        int translatedVertex = uPlane.SameSide(pv[singleInd], translationSide) ? 1 : 0;
 
         int single1 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 1) % 3]);
         int single2 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 2) % 3]);
@@ -239,9 +268,41 @@ public class Bisec : MonoBehaviour {
         newTriangles.Add(pi[(singleInd + 2) % 3]);
     }
 
-    private void Contract_PostTriangleDelegate()
+    private void Contract_PostTriangleDelegate(int i)
     {
+        // Find the point that is on it's own
+        int singleInd = -1;
+        for (singleInd = 0; singleInd < 3; singleInd++)
+        {
+            if (!lineReform[singleInd])
+            {
+                singleInd = (singleInd + 2) % 3;
+                break;
+            }
+        }
 
+        int single1 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 1) % 3]);
+        int single2 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 2) % 3]);
+
+        // If the single point is being deleted...
+        if (uPlane.SameSide(pv[singleInd], translationSide))
+        {
+            // We make a quad
+            newTriangles.Add(pi[(singleInd + 1) % 3]);
+            newTriangles.Add(pi[(singleInd + 2) % 3]);
+            newTriangles.Add(single1);
+            newTriangles.Add(single2);
+            newTriangles.Add(single1);
+            newTriangles.Add(pi[(singleInd + 2) % 3]);
+        }
+        // Otherwise...
+        else
+        {
+            // We make a triangle
+            newTriangles[i] = pi[singleInd];
+            newTriangles[i + 1] = single1;
+            newTriangles[i + 2] = single2;
+        }
     }
 
     /*
