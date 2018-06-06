@@ -38,7 +38,7 @@ public class WorldController : MonoBehaviour
             plane2_.normal = planeOne.transform.rotation * plane2_.normal;
 
             //cube.Expand(plane_, plane2_);
-            cube.Contract(plane_, plane2_, false);
+            cube.Contract(plane_, plane2_, singleObject:false);
         }
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -48,6 +48,7 @@ public class WorldController : MonoBehaviour
 
             cube.GetComponent<MeshFilter>().mesh.RecalculateNormals();
             cube.GetComponent<MeshFilter>().mesh.RecalculateTangents();
+            cube.NewMeshBuild();
         }
 	}
 }

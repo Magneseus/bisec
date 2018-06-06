@@ -46,7 +46,7 @@ public class Bisec : MonoBehaviour {
         }
     }
 
-    private void NewMeshBuild()
+    public void NewMeshBuild()
     {
         // Create the line lookup table
         lineLookupTable = new int[targetMesh.vertexCount][];
@@ -66,13 +66,64 @@ public class Bisec : MonoBehaviour {
     public void Expand(b_Plane bisectPlane, b_Plane bisectPlane2)
     {
         Bisect(bisectPlane, bisectPlane2, true);
+
+        // Add a translation to all the required vertices
+        // or delete if contracting with a single plane
+        for (int i = 0; i < targetMesh.vertexCount; i++)
+        {
+            // If we're on the proper side of the plane
+            if (uPlane.SameSide(newVerts[i], translationSide))
+            {
+                // Translate the vertex
+                newVerts[i] += translation;
+            }
+        }
+
+
+        targetMesh.SetVertices(newVerts);
+        targetMesh.SetTriangles(newTriangles, 0);
+
+        targetMesh.RecalculateNormals();
+        targetMesh.RecalculateTangents();
     }
 
-    public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2, bool planesSeparate=true)
+    public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2, bool singleObject=false)
     {
         Bisect(bisectPlane, bisectPlane2, false);
-    }
 
+        List<int> verticesToRemove = new List<int>();
+
+        // Add a translation to all the required vertices
+        // or delete if contracting with a single plane
+        for (int i = 0; i < targetMesh.vertexCount; i++)
+        {
+            // If we're on the proper side of the plane
+            if (uPlane.SameSide(newVerts[i], translationSide))
+            {
+                verticesToRemove.Add(i);
+            }
+        }
+
+        for (int i = 0; i < newTriangles.Count; i += 3)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                if (verticesToRemove.Contains(newTriangles[i + j]))
+                {
+                    newTriangles.RemoveRange(i, 3);
+                    i -= 3;
+                    break;
+                }
+            }
+        }
+
+        targetMesh.SetVertices(newVerts);
+        targetMesh.SetTriangles(newTriangles, 0);
+
+        targetMesh.RecalculateNormals();
+        targetMesh.RecalculateTangents();
+    }
+    
 
     /*
      * When expanding, should achieve a O(n) time, but could possibly reduce
@@ -87,7 +138,6 @@ public class Bisec : MonoBehaviour {
             return;
 
         // Transform the planes to local space for the mesh
-        
         bisectPlaneLocal.location = this.transform.worldToLocalMatrix.MultiplyPoint(bisectPlane.location);
         bisectPlaneLocal.normal = this.transform.worldToLocalMatrix.rotation * bisectPlane.normal;
 
@@ -198,34 +248,6 @@ public class Bisec : MonoBehaviour {
             }
             
         } // END OF TRIANGLE ITERATION
-
-
-        // Add a translation to all the required vertices
-        // or delete if contracting with a single plane
-        for (int i = 0; i < targetMesh.vertexCount; i++)
-        {
-            // If we're on the proper side of the plane
-            if (uPlane.SameSide(newVerts[i], translationSide))
-            {
-                // Translate the vertex
-                if (expand)
-                {
-                    newVerts[i] += translation;
-                }
-                // Delete the vertex
-                else
-                {
-                    newVerts.RemoveAt(i);
-                    i--;
-                }
-            }
-        }
-
-        targetMesh.SetVertices(newVerts);
-        targetMesh.SetTriangles(newTriangles, 0);
-
-        targetMesh.RecalculateNormals();
-        targetMesh.RecalculateTangents();
     }
 
     private void Expand_PostTriangleDelegate(int i)
