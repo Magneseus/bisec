@@ -17,4 +17,9 @@
     {
         data = _data;
     }
+
+    public bool IsActive()
+    {
+        return prevActiveNode != null && nextActiveNode != null;
+    }
 }
