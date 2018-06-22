@@ -102,12 +102,18 @@ public class ActiveList<T> : ICollection<T>
     public bool Remove(T item)
     {
         ActiveNode<T> it = GetNodeAt(item);
-        if (it != null)
+        
+        return Remove(it);
+    }
+
+    public bool Remove(ActiveNode<T> nodeToRemove)
+    {
+        if (nodeToRemove != null)
         {
-            ActiveNode<T> pNode = it.prevNode;
-            ActiveNode<T> nNode = it.nextNode;
-            ActiveNode<T> paNode = it.prevActiveNode;
-            ActiveNode<T> naNode = it.nextActiveNode;
+            ActiveNode<T> pNode = nodeToRemove.prevNode;
+            ActiveNode<T> nNode = nodeToRemove.nextNode;
+            ActiveNode<T> paNode = nodeToRemove.prevActiveNode;
+            ActiveNode<T> naNode = nodeToRemove.nextActiveNode;
 
             pNode.nextNode = nNode;
             nNode.prevNode = pNode;
@@ -115,10 +121,10 @@ public class ActiveList<T> : ICollection<T>
             paNode.nextActiveNode = naNode;
             naNode.prevActiveNode = paNode;
 
-            if (it.IsActive())
+            if (nodeToRemove.IsActive())
                 ActiveCount--;
             Count--;
-            it = null;
+            nodeToRemove = null;
 
             IsIndexable = false;
 
