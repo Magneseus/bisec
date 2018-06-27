@@ -265,14 +265,14 @@ public class ActiveList<T> : ICollection<T>
         return node.isRootNode;
     }
 
-    private ActiveNode<T> GetNodeAt(int index)
+    public ActiveNode<T> GetNodeAt(int index)
     {
         ActiveNode<T> it = rootNode.nextNode;
         for (int i = 0; i < index; i++, it = it.nextNode) ;
         return it;
     }
 
-    private ActiveNode<T> GetNodeAt(T item)
+    public ActiveNode<T> GetNodeAt(T item)
     {
         ActiveNode<T> it = rootNode.nextNode;
 
