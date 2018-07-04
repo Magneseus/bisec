@@ -22,4 +22,52 @@ public class Triangle
 		n2 = vertices.GetNodeAt(t2);
 		n3 = vertices.GetNodeAt(t3);
 	}
+	
+	public Vector3 GetVertex(int index)
+	{
+		switch (index)
+		{
+			case 0:
+				return p1;
+			case 1:
+				return p2;
+			case 2:
+				return p3;
+		}
+		
+		throw new UnityException("Bisec: Triangle vertex out of bounds.");
+	}
+	
+	public void SetVertex(int index, Vector3 value)
+	{
+		switch (index)
+		{
+			case 0:
+				n1.data = value;
+				break;
+			case 1:
+				n2.data = value;
+				break;
+			case 2:
+				n2.data = value;
+				break;
+		}
+		
+		throw new UnityException("Bisec: Triangle vertex out of bounds.");
+	}
+	
+	public int GetVertexIndex(int index)
+	{
+		switch (index)
+		{
+			case 0:
+				return n1.activeIndex;
+			case 1:
+				return n2.activeIndex;
+			case 2:
+				return n3.activeIndex;
+		}
+		
+		throw new UnityException("Bisec: Triangle vertex out of bounds.");
+	}
 }
