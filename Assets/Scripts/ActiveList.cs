@@ -288,4 +288,20 @@ public class ActiveList<T> : ICollection<T>
 
         return null;
     }
+    
+    public void GenerateActiveIndex()
+    {
+        ActiveNode<T> it = rootNode.nextActiveNode;
+        int ind = 0;
+        
+        while (!it.isRootNode)
+        {
+            it.activeIndex = ind;
+            
+            it = it.nextActiveNode;
+            ind++;
+        }
+        
+        IsIndexable = true;
+    }
 }
