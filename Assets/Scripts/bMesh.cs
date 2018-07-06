@@ -8,6 +8,7 @@ public class bMesh
     {
         public Vector3 location;
         public Vector3 normal;
+        public Plane uPlane;
     }
 	
     private int[][] lineLookupTable;
@@ -33,9 +34,10 @@ public class bMesh
 	}
 	
 	
-    private void PlaneTriangleBisection(b_Plane plane, Vector3 translationSide, Triangle triangle, bool duplicateIntersectionPoints=false,
+    private void PlaneTriangleBisection(b_Plane plane, Vector3 translationSide, Triangle triangle,
         out Triangle[] triangles,
-        out Triangle[] trianglesOnTranslationSide)
+        out Triangle[] trianglesOnTranslationSide,
+        bool duplicateIntersectionPoints=false)
     {
         triangles = null;
         trianglesOnTranslationSide = null;
@@ -45,7 +47,10 @@ public class bMesh
         if (PlaneTriangleIntersection(plane, triangle, out ints) == 0)
             return;
         
-        Vector3[] intersections = (Vector3[]) ints;
+        Vector3[] intersections = new Vector3[3];
+        intersections[0] = (Vector3) ints[0];
+        intersections[1] = (Vector3) ints[1];
+        intersections[2] = (Vector3) ints[2];
         
         // Find the point that is on it's own
         int singleInd = -1;
@@ -58,10 +63,10 @@ public class bMesh
             }
         }
 
-        int translatedVertex = uPlane.SameSide(pv[singleInd], translationSide) ? 1 : 0;
+        int translatedVertex = plane.uPlane.SameSide(triangle.GetVertex(singleInd), translationSide) ? 1 : 0;
 
-        int single1 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 1) % 3]);
-        int single2 = LineIntersectLookup(pi[singleInd], pi[(singleInd + 2) % 3]);
+        int single1 = LineIntersectLookup(triangle.GetVertexIndex(singleInd), triangle.GetVertexIndex((singleInd + 1) % 3));
+        int single2 = LineIntersectLookup(triangle.GetVertexIndex(singleInd), triangle.GetVertexIndex((singleInd + 2) % 3));
         
         // Remake the triangle (possibly with duplicate intersections [when expanding])
         
@@ -108,7 +113,7 @@ public class bMesh
         }
     }
 	
-	private static int PlaneTriangleIntersection(b_Plane plane, Triangle triangle, 
+	private int PlaneTriangleIntersection(b_Plane plane, Triangle triangle, 
         out object[] intersection)
 	{
 		intersection = new object[3];
@@ -116,11 +121,17 @@ public class bMesh
         
         Vector3 vec;
 		if (PlaneSegmentIntersection(plane, triangle.p1, triangle.p2, out vec) == 1)
+        {
             intersection[0] = (object) vec;
+        }
         if (PlaneSegmentIntersection(plane, triangle.p2, triangle.p3, out vec) == 1)
+        {
             intersection[1] = (object) vec;
+        }
         if (PlaneSegmentIntersection(plane, triangle.p3, triangle.p1, out vec) == 1)
+        {
             intersection[2] = (object) vec;
+        }
 		
         if (intersection[0] == null && intersection[1] == null)
             return 0;
