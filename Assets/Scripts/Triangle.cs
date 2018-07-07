@@ -23,6 +23,28 @@ public class Triangle
 		n3 = vertices.GetNodeAt(t3);
 	}
 	
+	public ActiveNode<Vector3> GetNode(int index)
+	{
+		switch (index)
+		{
+			case 0:
+				return n1;
+			case 1:
+				return n2;
+			case 2:
+				return n3;
+		}
+		
+		throw new UnityException("Bisec: Triangle vertex out of bounds.");
+	}
+	
+	public void SetNodes(ActiveNode<Vector3> n1, ActiveNode<Vector3> n2, ActiveNode<Vector3> n3)
+	{
+		this.n1 = n1;
+		this.n2 = n2;
+		this.n3 = n3;
+	}
+	
 	public Vector3 GetVertex(int index)
 	{
 		switch (index)

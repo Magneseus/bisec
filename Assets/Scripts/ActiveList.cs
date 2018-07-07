@@ -40,7 +40,7 @@ public class ActiveList<T> : ICollection<T>
         Add(item, true);
     }
 
-    public void Add(T item, bool active = true)
+    public ActiveNode<T> Add(T item, bool active = true)
     {
         ActiveNode<T> newNode = new ActiveNode<T>(item);
 
@@ -64,15 +64,17 @@ public class ActiveList<T> : ICollection<T>
 
             newNode.activeIndex = ActiveCount++;
         }
+        
+        return newNode;
     }
 
-    public void Insert(T item, int index, bool active = true)
+    public ActiveNode<T> Insert(T item, int index, bool active = true)
     {
         ActiveNode<T> node = GetNodeAt(index);
-        InsertBefore(item, node, active);
+        return InsertBefore(item, node, active);
     }
 
-    public void InsertBefore(T itemToAdd, ActiveNode<T> beforeNode, bool active = true)
+    public ActiveNode<T> InsertBefore(T itemToAdd, ActiveNode<T> beforeNode, bool active = true)
     {
         ActiveNode<T> newNode = new ActiveNode<T>(itemToAdd);
 
@@ -97,6 +99,8 @@ public class ActiveList<T> : ICollection<T>
             IsIndexable = false;
             ActiveCount++;
         }
+        
+        return newNode;
     }
 
     public bool Remove(T item)

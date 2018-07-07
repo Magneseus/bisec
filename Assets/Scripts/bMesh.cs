@@ -11,9 +11,10 @@ public class bMesh
         public Plane uPlane;
     }
 	
-    private int[][] lineLookupTable;
+    private ActiveNode<Vector3>[][] lineLookupTable;
 	private ActiveList<Vector3> vertices;
 	private ActiveList<Triangle> triangles;
+    private ActiveNode<Vector3> lineLookupBlank;
 	
 	public bMesh(Mesh targetMesh)
 	{
@@ -30,27 +31,18 @@ public class bMesh
 					targetMesh.triangles[i+2]));
 		}
         
+        lineLookupBlank = new ActiveNode<Vector3>();
+        lineLookupBlank.isRootNode = true;
         ResetLineLookupTable();
 	}
 	
 	
-    private void PlaneTriangleBisection(b_Plane plane, Vector3 translationSide, Triangle triangle,
-        out Triangle[] triangles,
-        out Triangle[] trianglesOnTranslationSide,
-        bool duplicateIntersectionPoints=false)
+    private void PlaneTriangleBisection(b_Plane plane, Vector3 translationSide, Triangle triangle)
     {
-        triangles = null;
-        trianglesOnTranslationSide = null;
-        object[] ints;
+        ActiveNode<Vector3>[] ints;
         
-        // Check prev intersections?
-        if (PlaneTriangleIntersection(plane, triangle, out ints) == 0)
+        if (PlaneTriangleIntersection(plane, triangle, out ints, true) == 0)
             return;
-        
-        Vector3[] intersections = new Vector3[3];
-        intersections[0] = (Vector3) ints[0];
-        intersections[1] = (Vector3) ints[1];
-        intersections[2] = (Vector3) ints[2];
         
         // Find the point that is on it's own
         int singleInd = -1;
@@ -63,13 +55,38 @@ public class bMesh
             }
         }
 
-        int translatedVertex = plane.uPlane.SameSide(triangle.GetVertex(singleInd), translationSide) ? 1 : 0;
+        bool translatedVertex = plane.uPlane.SameSide(triangle.GetVertex(singleInd), translationSide) ? true : false;
 
-        int single1 = LineIntersectLookup(triangle.GetVertexIndex(singleInd), triangle.GetVertexIndex((singleInd + 1) % 3));
-        int single2 = LineIntersectLookup(triangle.GetVertexIndex(singleInd), triangle.GetVertexIndex((singleInd + 2) % 3));
+        ActiveNode<Vector3> single1 = LineIntersectLookup(triangle.GetVertexIndex(singleInd), triangle.GetVertexIndex((singleInd + 1) % 3));
+        ActiveNode<Vector3> single1T = single1.nextActiveNode;
+        ActiveNode<Vector3> single2 = LineIntersectLookup(triangle.GetVertexIndex(singleInd), triangle.GetVertexIndex((singleInd + 2) % 3));
+        ActiveNode<Vector3> single2T = single2.nextActiveNode;
+        
+        if (!translatedVertex)
+        {
+            single1 = single1.nextActiveNode;
+            single1T = single1T.prevActiveNode;
+            single2 = single2.nextActiveNode;
+            single2T = single2T.nextActiveNode;
+        }
         
         // Remake the triangle (possibly with duplicate intersections [when expanding])
+        // Make the new quad bridging the parts of the triangle
+        triangles.Add(new Triangle(single1T, single1, single2));
+        triangles.Add(new Triangle(single2T, single1T, single2));
+
+        // Make the quad "base" of the bisected triangle
+        triangles.Add(new Triangle(
+                triangle.GetNode((singleInd + 1) % 3),
+                triangle.GetNode((singleInd + 2) % 3),
+                single1));
+        triangles.Add(new Triangle(
+                single2,
+                single1,
+                triangle.GetNode((singleInd + 2) % 3)));
         
+        // Remake the "tip" of the triangle
+        triangle.SetNodes(ints[singleInd], single1T, single2T);
     }
 	
 	/*
@@ -87,54 +104,72 @@ public class bMesh
      * The returned index + 1 represents the index of the secondary vertex created
      * and translated.
      */
-    private int LineIntersectLookup(int vertInd1, int vertInd2)
+    private ActiveNode<Vector3> LineIntersectLookup(int vertInd1, int vertInd2)
     {
         return lineLookupTable[vertInd1][vertInd2];
     }
 
     // Make sure to use LineIntersectLookup first
-    private void SetLineIntersect(int vertInd1, int vertInd2, int newVertInd)
+    private void SetLineIntersect(int vertInd1, int vertInd2, ActiveNode<Vector3> newVert)
     {
-        lineLookupTable[vertInd1][vertInd2] = newVertInd;
-        lineLookupTable[vertInd2][vertInd1] = newVertInd;
+        lineLookupTable[vertInd1][vertInd2] = newVert;
+        lineLookupTable[vertInd2][vertInd1] = newVert;
     }
     
     private void ResetLineLookupTable()
     {
         // Create the line lookup table
-        lineLookupTable = new int[vertices.ActiveCount][];
+        lineLookupTable = new ActiveNode<Vector3>[vertices.ActiveCount][];
         for (int i = 0; i < lineLookupTable.Length; i++)
         {
-            lineLookupTable[i] = new int[vertices.ActiveCount];
+            lineLookupTable[i] = new ActiveNode<Vector3>[vertices.ActiveCount];
             for (int j = 0; j < lineLookupTable[i].Length; j++)
             {
-                lineLookupTable[i][j] = -1;
+                lineLookupTable[i][j] = null;
             }
         }
     }
 	
 	private int PlaneTriangleIntersection(b_Plane plane, Triangle triangle, 
-        out object[] intersection)
+        out ActiveNode<Vector3>[] intersection,
+        bool duplicateIntersectionPoints=false)
 	{
-		intersection = new object[3];
+		intersection = new ActiveNode<Vector3>[3];
         intersection[0] = null;intersection[1] = null;intersection[2] = null;
         
-        Vector3 vec;
-		if (PlaneSegmentIntersection(plane, triangle.p1, triangle.p2, out vec) == 1)
+        Vector3 vec;        
+        for (int i = 0; i < 3; i++)
         {
-            intersection[0] = (object) vec;
-        }
-        if (PlaneSegmentIntersection(plane, triangle.p2, triangle.p3, out vec) == 1)
-        {
-            intersection[1] = (object) vec;
-        }
-        if (PlaneSegmentIntersection(plane, triangle.p3, triangle.p1, out vec) == 1)
-        {
-            intersection[2] = (object) vec;
+            int j = (i + 1) % 3;
+            
+            if (LineIntersectLookup(i, j) == lineLookupBlank)
+            {
+                continue;
+            }
+            else if (LineIntersectLookup(i, j) != null)
+            {
+                intersection[i] = LineIntersectLookup(i, j);
+            }
+            else if (PlaneSegmentIntersection(plane, triangle.GetVertex(i), triangle.GetVertex(j), out vec) == 1)
+            {
+                intersection[i] = vertices.Add(vec, true);
+                SetLineIntersect(triangle.GetVertexIndex(i), triangle.GetVertexIndex(j), intersection[i]);
+                
+                if (duplicateIntersectionPoints)
+                {
+                    vertices.Add(new Vector3(vec.x, vec.y, vec.z), true);
+                }
+            }
+            else
+            {
+                SetLineIntersect(triangle.GetVertexIndex(i), triangle.GetVertexIndex(j), lineLookupBlank);
+            }
         }
 		
         if (intersection[0] == null && intersection[1] == null)
+        {
             return 0;
+        }
         
 		return 1;
 	}
