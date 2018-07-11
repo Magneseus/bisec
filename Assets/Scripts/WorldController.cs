@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class WorldController : MonoBehaviour
 {
-    public Bisec cube;
+    public bMesh cube;
+    //public Bisec cube;
     public GameObject planeOne;
     public GameObject planeTwo;
 
     private Vector3 translate;
-    private Bisec.b_Plane plane_;
-    private Bisec.b_Plane plane2_;
+    private bMesh.b_Plane plane_;
+    private bMesh.b_Plane plane2_;
 
     private List<int> oldTriangles;
     private List<Vector3> oldVerts;
@@ -32,10 +33,12 @@ public class WorldController : MonoBehaviour
             plane_.location = planeOne.transform.position;
             plane_.normal = Vector3.up;
             plane_.normal = planeOne.transform.rotation * plane_.normal;
+            plane_.uPlane = new Plane(plane_.normal, plane_.location);
 
             plane2_.location = planeTwo.transform.position;
             plane2_.normal = Vector3.up;
             plane2_.normal = planeOne.transform.rotation * plane2_.normal;
+            plane2_.uPlane = new Plane(plane2_.normal, plane2_.location);
 
             cube.Expand(plane_, plane2_);
             //cube.Contract(plane_, plane2_, singleObject:true);
@@ -48,7 +51,7 @@ public class WorldController : MonoBehaviour
 
             cube.GetComponent<MeshFilter>().mesh.RecalculateNormals();
             cube.GetComponent<MeshFilter>().mesh.RecalculateTangents();
-            cube.NewMeshBuild();
+            cube.ResetMesh();
         }
 	}
 }

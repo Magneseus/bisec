@@ -226,6 +226,25 @@ public class ActiveList<T> : ICollection<T>
 
         IsIndexable = true;
     }
+    
+    public void CopyActiveTo(List<T> array)
+    {
+        if (array == null)
+            throw new ArgumentNullException();
+
+        ActiveNode<T> it = rootNode.nextActiveNode;
+        int ind = 0;
+        while (!it.isRootNode)
+        {
+            array.Add(it.data);
+            it.activeIndex = ind;
+
+            it = it.nextActiveNode;
+            ind++;
+        }
+
+        IsIndexable = true;
+    }
 
     public IEnumerator<T> GetEnumerator()
     {
@@ -291,6 +310,11 @@ public class ActiveList<T> : ICollection<T>
         }
 
         return null;
+    }
+    
+    public ActiveNode<T> GetRootNode()
+    {
+        return rootNode;
     }
     
     public void GenerateActiveIndex()
