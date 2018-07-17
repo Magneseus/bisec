@@ -66,12 +66,14 @@ public class bMesh : MonoBehaviour
             TriangleBisection(bisectPlaneLocal, translationSide, it, verticesToBeTranslated, trianglesNotTranslated);
             foreach (ActiveNode<Triangle> node in trianglesNotTranslated)
             {
-                TriangleBisection(bisectPlaneLocal2, translationSide2, node, verticesToBeTranslated, trianglesInBetween, true);
+                TriangleBisection(bisectPlaneLocal2, translationSide2, node, verticesToBeTranslated2, trianglesInBetween, true);
             }
             
             trianglesNotTranslated.Clear();
             it = it.nextActiveNode;
         }
+        
+        verticesToBeTranslated.Clear();
         
         if (timeToContract < 0.0f)
         {
@@ -81,13 +83,61 @@ public class bMesh : MonoBehaviour
                 ActiveNode<Triangle> node = trianglesInBetween[i];
                 triangles.SetActivity(node, false);
             }
+            foreach (ActiveNode<Vector3> node in verticesToBeTranslated2)
+            {
+                node.data -= translation;
+            }
+            
             RegenerateMesh();
         }
         else
         {
             RegenerateMesh();
-            StartCoroutine(ExpandTransition(timeToContract, verticesToBeTranslated, translation));
+            StartCoroutine(ContractTransition(timeToContract, verticesToBeTranslated2, trianglesInBetween, -translation));
         }
+    }
+    
+    IEnumerator ContractTransition(float numSeconds, HashSet<ActiveNode<Vector3>> verticesToBeTranslated, List<ActiveNode<Triangle>> trianglesToRemove, Vector3 translation)
+    {
+        float endTime = Time.realtimeSinceStartup + numSeconds;
+        float currentTime = Time.realtimeSinceStartup;
+        
+        List<Vector3> originalVertices = new List<Vector3>();
+        foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+        {
+            originalVertices.Add(new Vector3(node.data.x, node.data.y, node.data.z));
+        }
+        
+        while (currentTime < endTime)
+        {
+            float t = 1.0f - ((endTime - currentTime) / numSeconds);
+            int _i = 0;
+            foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+            {
+                node.data = Vector3.Lerp(originalVertices[_i], originalVertices[_i] + translation, t);
+                _i++;
+            }
+            
+            RegenerateMesh();
+            
+            currentTime = Time.realtimeSinceStartup;
+            yield return new WaitForFixedUpdate();
+        }
+        
+        int i = 0;
+        foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+        {
+            node.data = originalVertices[i] + translation;
+            i++;
+        }
+        int x = trianglesToRemove.Count;
+        for (int j = 0; j < x; j++)
+        {
+            ActiveNode<Triangle> node = trianglesToRemove[j];
+            triangles.SetActivity(node, false);
+        }
+        
+        RegenerateMesh();
     }
 	
     public void Expand(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToExpand=-1.0f)
@@ -164,6 +214,8 @@ public class bMesh : MonoBehaviour
             node.data = originalVertices[i] + translation;
             i++;
         }
+        
+        RegenerateMesh();
     }
 	
     
@@ -203,6 +255,18 @@ public class bMesh : MonoBehaviour
                     }
                 }
             }
+            else
+            {
+                if (useSecondLookupTable)
+                {
+                    // This is a triangle that needs to be translated
+                    for (int i = 0; i < 3; i++)
+                    {
+                        // Add it's vertices to the list to be translated
+                        verticesToBeTranslated.Add(triangle.GetNode(i));
+                    }
+                }
+            }
             
             // Return, we don't care about this triangle beyond which side of the plane it's on
             return;
@@ -229,8 +293,11 @@ public class bMesh : MonoBehaviour
         ActiveNode<Vector3> single2T = single2.nextActiveNode;
         
         // Add the single1T and single2T to the list
-        verticesToBeTranslated.Add(single1T);
-        verticesToBeTranslated.Add(single2T);
+        if (!useSecondLookupTable)
+        {
+            verticesToBeTranslated.Add(single1T);
+            verticesToBeTranslated.Add(single2T);
+        }
         
         // If the single point is not on the translation side
         if (!translatedVertex)
@@ -244,20 +311,41 @@ public class bMesh : MonoBehaviour
                 single2T = single2T.prevActiveNode;
             }
             
-            // singleInd+1 and singleInd+2 need to be translated, add them to the list
-            verticesToBeTranslated.Add(triangle.GetNode((singleInd + 1) % 3));
-            verticesToBeTranslated.Add(triangle.GetNode((singleInd + 2) % 3));
+            
+            if (!useSecondLookupTable)
+            {
+                // singleInd+1 and singleInd+2 need to be translated, add them to the list
+                verticesToBeTranslated.Add(triangle.GetNode((singleInd + 1) % 3));
+                verticesToBeTranslated.Add(triangle.GetNode((singleInd + 2) % 3));
+            }
+            else
+            {
+                // SingleInd needs to be translated
+                verticesToBeTranslated.Add(triangle.GetNode(singleInd));
+            }
         }
         else
         {
-            // SingleInd needs to be translated
-            verticesToBeTranslated.Add(triangle.GetNode(singleInd));
+            if (!useSecondLookupTable)
+            {
+                // SingleInd needs to be translated
+                verticesToBeTranslated.Add(triangle.GetNode(singleInd));
+            }
+            else
+            {
+                // singleInd+1 and singleInd+2 need to be translated, add them to the list
+                verticesToBeTranslated.Add(triangle.GetNode((singleInd + 1) % 3));
+                verticesToBeTranslated.Add(triangle.GetNode((singleInd + 2) % 3));
+            }
         }
         
         if (!duplicateIntersectionPoints)
         {
             single1T = single1;
             single2T = single2;
+            
+            verticesToBeTranslated.Add(single1);
+            verticesToBeTranslated.Add(single2);
         }
         
         /////// Remake the triangle (possibly with duplicate intersections [when expanding])
