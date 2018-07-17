@@ -171,6 +171,38 @@ public class ActiveList<T> : ICollection<T>
 
         return returnVal;
     }
+    
+    public void SetActivity(ActiveNode<T> node, bool nodeIsActive)
+    {
+        if (node.IsActive() == nodeIsActive)
+            return;
+        
+        if (nodeIsActive)
+        {
+            ActiveNode<T> it = node;
+            while (!it.IsActive())
+            {
+                it = it.prevNode;
+                if (it.isRootNode)
+                    break;
+            }
+            
+            ActiveNode<T> nextActive = it.nextActiveNode;
+            node.prevActiveNode = it;
+            node.nextActiveNode = nextActive;
+            
+            nextActive.prevActiveNode = node;
+            it.nextActiveNode = node;
+        }
+        else
+        {
+            node.prevActiveNode.nextActiveNode = node.nextActiveNode;
+            node.nextActiveNode.prevActiveNode = node.prevActiveNode;
+            
+            node.nextActiveNode = null;
+            node.prevActiveNode = null;
+        }
+    }
 
     public T this[int index]
     {

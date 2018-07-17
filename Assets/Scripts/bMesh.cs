@@ -12,6 +12,7 @@ public class bMesh : MonoBehaviour
     }
 	
     private ActiveNode<Vector3>[][] lineLookupTable;
+    private ActiveNode<Vector3>[][] lineLookupTable2;
 	private ActiveList<Vector3> vertices;
 	private ActiveList<Triangle> triangles;
     private ActiveNode<Vector3> lineLookupBlank;
@@ -31,6 +32,104 @@ public class bMesh : MonoBehaviour
             ResetMesh();
         }
 	}
+    
+    public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToContract=-1.0f)
+    {
+        Vector3 translation = bisectPlane2.location - bisectPlane.location;
+        
+        // Transform the planes to local space for the mesh
+        b_Plane bisectPlaneLocal;
+        bisectPlaneLocal.location = this.transform.InverseTransformPoint(bisectPlane.location);
+        bisectPlaneLocal.normal = this.transform.InverseTransformDirection(bisectPlane.normal);
+        bisectPlaneLocal.uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
+        b_Plane bisectPlaneLocal2;
+        bisectPlaneLocal2.location = this.transform.InverseTransformPoint(bisectPlane2.location);
+        bisectPlaneLocal2.normal = this.transform.InverseTransformDirection(bisectPlane2.normal);
+        bisectPlaneLocal2.uPlane = new Plane(bisectPlaneLocal2.normal, bisectPlaneLocal2.location);
+
+        // Transform translation to local space
+        translation = this.transform.InverseTransformDirection(translation);
+        Vector3 translationSide = bisectPlaneLocal.location + translation;
+        Vector3 translationSide2 = bisectPlaneLocal2.location - translation;
+        
+        int triangleLen = triangles.ActiveCount;
+        int verticesLen = vertices.ActiveCount;
+        
+        HashSet<ActiveNode<Vector3>> verticesToBeTranslated = new HashSet<ActiveNode<Vector3>>();
+        HashSet<ActiveNode<Vector3>> verticesToBeTranslated2 = new HashSet<ActiveNode<Vector3>>();
+        List<ActiveNode<Triangle>> trianglesInBetween = new List<ActiveNode<Triangle>>();
+        List<ActiveNode<Triangle>> trianglesNotTranslated = new List<ActiveNode<Triangle>>();
+        
+        ActiveNode<Triangle> it = triangles.GetRootNode().nextActiveNode;
+        for (int i = 0; i < triangleLen; i++)
+        {
+            TriangleBisection(bisectPlaneLocal, translationSide, it, verticesToBeTranslated, trianglesNotTranslated);
+            foreach (ActiveNode<Triangle> node in trianglesNotTranslated)
+            {
+                TriangleBisection(bisectPlaneLocal2, translationSide2, node, verticesToBeTranslated, trianglesInBetween, true);
+            }
+            
+            trianglesNotTranslated.Clear();
+            it = it.nextActiveNode;
+        }
+        
+        if (timeToContract < 0.0f)
+        {
+            int x = trianglesInBetween.Count;
+            for (int i = 0; i < x; i++)
+            {
+                ActiveNode<Triangle> node = trianglesInBetween[i];
+                triangles.SetActivity(node, false);
+            }
+            RegenerateMesh();
+        }
+        else
+        {
+            RegenerateMesh();
+            StartCoroutine(ExpandTransition(timeToContract, verticesToBeTranslated, translation));
+        }
+    }
+	
+    public void Expand(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToExpand=-1.0f)
+    {
+        Vector3 translation = bisectPlane2.location - bisectPlane.location;
+        
+        // Transform the planes to local space for the mesh
+        b_Plane bisectPlaneLocal;
+        bisectPlaneLocal.location = this.transform.InverseTransformPoint(bisectPlane.location);
+        bisectPlaneLocal.normal = this.transform.InverseTransformDirection(bisectPlane.normal);
+        bisectPlaneLocal.uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
+
+        // Transform translation to local space
+        translation = this.transform.InverseTransformDirection(translation);
+        Vector3 translationSide = bisectPlaneLocal.location + translation;
+        
+        int triangleLen = triangles.ActiveCount;
+        int verticesLen = vertices.ActiveCount;
+        
+        HashSet<ActiveNode<Vector3>> verticesToBeTranslated = new HashSet<ActiveNode<Vector3>>();
+        
+        ActiveNode<Triangle> it = triangles.GetRootNode().nextActiveNode;
+        for (int i = 0; i < triangleLen; i++)
+        {
+            TriangleBisection(bisectPlaneLocal, translationSide, it, verticesToBeTranslated);
+            it = it.nextActiveNode;
+        }
+        
+        if (timeToExpand < 0.0f)
+        {
+            foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+            {
+                node.data += translation;
+            }
+            RegenerateMesh();
+        }
+        else
+        {
+            RegenerateMesh();
+            StartCoroutine(ExpandTransition(timeToExpand, verticesToBeTranslated, translation));
+        }
+    }
     
     IEnumerator ExpandTransition(float numSeconds, HashSet<ActiveNode<Vector3>> verticesToBeTranslated, Vector3 translation)
     {
@@ -67,102 +166,42 @@ public class bMesh : MonoBehaviour
         }
     }
 	
-    public void Expand(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToExpand=-1.0f)
-    {
-        Vector3 translation = bisectPlane2.location - bisectPlane.location;
-        
-        // Transform the planes to local space for the mesh
-        b_Plane bisectPlaneLocal;
-        bisectPlaneLocal.location = this.transform.InverseTransformPoint(bisectPlane.location);
-        bisectPlaneLocal.normal = this.transform.InverseTransformDirection(bisectPlane.normal);
-        bisectPlaneLocal.uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
-
-        // Transform translation to local space
-        translation = this.transform.InverseTransformDirection(translation);
-        Vector3 translationSide = bisectPlaneLocal.location + translation;
-        
-        int triangleLen = triangles.ActiveCount;
-        int verticesLen = vertices.ActiveCount;
-        
-        HashSet<ActiveNode<Vector3>> verticesToBeTranslated = new HashSet<ActiveNode<Vector3>>();
-        
-        ActiveNode<Triangle> it = triangles.GetRootNode().nextActiveNode;
-        for (int i = 0; i < triangleLen; i++)
-        {
-            TriangleBisection(bisectPlaneLocal, translationSide, it, verticesToBeTranslated);
-            it = it.nextActiveNode;
-        }
-        
-       
-        
-        /*
-        ActiveNode<Vector3> it2 = vertices.GetRootNode().nextActiveNode;
-        for (int i = 0; i < verticesLen; i++)
-        {
-            // If we're on the proper side of the plane
-            if (bisectPlaneLocal.uPlane.SameSide(it2.data, translationSide))
-            {
-                // Translate the vertex
-                it2.data += translation;
-            }
-            
-            it2 = it2.nextActiveNode;
-        }
-        
-        // Translate (in an alternating fashion) the remaining new triangles
-        bool doTranslate = false;
-        while (!it2.isRootNode)
-        {
-            if (doTranslate)
-            {
-                it2.data += translation;
-            }
-            
-            doTranslate = !doTranslate;
-            it2 = it2.nextActiveNode;
-        }
-        */
-        
-        if (timeToExpand < 0.0f)
-        {
-            foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
-            {
-                node.data += translation;
-            }
-            RegenerateMesh();
-        }
-        else
-        {
-            RegenerateMesh();
-            StartCoroutine(ExpandTransition(timeToExpand, verticesToBeTranslated, translation));
-        }
-    }
-	
+    
+    
+	/*
+	    Helper Functions
+	*/
+    
     private void TriangleBisection(b_Plane plane, Vector3 translationSide, ActiveNode<Triangle> triangleNode,
         HashSet<ActiveNode<Vector3>> verticesToBeTranslated,
-        HashSet<ActiveNode<Triangle>> trianglesNotTranslated=null)
+        List<ActiveNode<Triangle>> trianglesInBetween=null,
+        bool useSecondLookupTable=false)
     {
         Triangle triangle = triangleNode.data;
         ActiveNode<Vector3>[] ints;
         
+        bool duplicateIntersectionPoints = trianglesInBetween == null;
+        
         // Check if the plane intersects the triangle, output intersections to 'ints'
         // Vertices are automatically created in the 'vertices' list by this function
-        if (PlaneTriangleIntersection(plane, triangle, out ints, true) == 0)
+        if (PlaneTriangleIntersection(plane, triangle, out ints, duplicateIntersectionPoints, useSecondLookupTable) == 0)
         {
             // If no intersections...
             if (plane.uPlane.SameSide(triangle.GetVertex(0), translationSide))
             {
-                // This is a triangle that needs to be translated
-                for (int i = 0; i < 3; i++)
+                if (trianglesInBetween != null)
                 {
-                    // Add it's vertices to the list to be translated
-                    verticesToBeTranslated.Add(triangle.GetNode(i));
+                    trianglesInBetween.Add(triangleNode);
                 }
-            }
-            else
-            {
-                // This is a triangle that should not be translated
-                trianglesNotTranslated.Add(triangleNode);
+                else
+                {
+                    // This is a triangle that needs to be translated
+                    for (int i = 0; i < 3; i++)
+                    {
+                        // Add it's vertices to the list to be translated
+                        verticesToBeTranslated.Add(triangle.GetNode(i));
+                    }
+                }
             }
             
             // Return, we don't care about this triangle beyond which side of the plane it's on
@@ -184,9 +223,9 @@ public class bMesh : MonoBehaviour
         bool translatedVertex = plane.uPlane.SameSide(triangle.GetVertex(singleInd), translationSide) ? true : false;
         
         // Get the generated intersection points
-        ActiveNode<Vector3> single1 = LineIntersectLookup(triangle.GetVertexIndex(singleInd), triangle.GetVertexIndex((singleInd + 1) % 3));
+        ActiveNode<Vector3> single1 = ints[singleInd];
         ActiveNode<Vector3> single1T = single1.nextActiveNode;
-        ActiveNode<Vector3> single2 = LineIntersectLookup(triangle.GetVertexIndex(singleInd), triangle.GetVertexIndex((singleInd + 2) % 3));
+        ActiveNode<Vector3> single2 = ints[(singleInd + 2) % 3];
         ActiveNode<Vector3> single2T = single2.nextActiveNode;
         
         // Add the single1T and single2T to the list
@@ -197,10 +236,13 @@ public class bMesh : MonoBehaviour
         if (!translatedVertex)
         {
             // Switch the intersection points (switch the references, so the triangles are made properly)
-            single1 = single1.nextActiveNode;
-            single1T = single1T.prevActiveNode;
-            single2 = single2.nextActiveNode;
-            single2T = single2T.prevActiveNode;
+            if (duplicateIntersectionPoints)
+            {
+                single1 = single1.nextActiveNode;
+                single1T = single1T.prevActiveNode;
+                single2 = single2.nextActiveNode;
+                single2T = single2T.prevActiveNode;
+            }
             
             // singleInd+1 and singleInd+2 need to be translated, add them to the list
             verticesToBeTranslated.Add(triangle.GetNode((singleInd + 1) % 3));
@@ -212,32 +254,47 @@ public class bMesh : MonoBehaviour
             verticesToBeTranslated.Add(triangle.GetNode(singleInd));
         }
         
-        // Remake the triangle (possibly with duplicate intersections [when expanding])
+        if (!duplicateIntersectionPoints)
+        {
+            single1T = single1;
+            single2T = single2;
+        }
+        
+        /////// Remake the triangle (possibly with duplicate intersections [when expanding])
+        
         // Make the new quad bridging the parts of the triangle
-        triangles.Add(new Triangle(single1T, single1, single2));
-        triangles.Add(new Triangle(single2T, single1T, single2));
+        if (duplicateIntersectionPoints)
+        {
+            triangles.Add(new Triangle(single1T, single1, single2));
+            triangles.Add(new Triangle(single2T, single1T, single2));
+        }
 
         // Make the quad "base" of the bisected triangle
-        triangles.Add(new Triangle(
+        ActiveNode<Triangle> t1 = triangles.Add(new Triangle(
                 triangle.GetNode((singleInd + 1) % 3),
                 triangle.GetNode((singleInd + 2) % 3),
-                single1));
-        triangles.Add(new Triangle(
+                single1), true);
+        ActiveNode<Triangle> t2 = triangles.Add(new Triangle(
                 single2,
                 single1,
-                triangle.GetNode((singleInd + 2) % 3)));
+                triangle.GetNode((singleInd + 2) % 3)), true);
         
         // Remake the "tip" of the triangle
         triangle.SetNodes(triangle.GetNode(singleInd), single1T, single2T);
+        
+        if (trianglesInBetween != null)
+        {
+            if (translatedVertex)
+            {
+                trianglesInBetween.Add(triangleNode);
+            }
+            else
+            {
+                trianglesInBetween.Add(t1);
+                trianglesInBetween.Add(t2);
+            }
+        }
     }
-    
-    
-    
-    
-    
-	/*
-	    Helper Functions
-	*/
     
     public void ResetMesh()
     {
@@ -298,16 +355,33 @@ public class bMesh : MonoBehaviour
      * The returned index + 1 represents the index of the secondary vertex created
      * and translated.
      */
-    private ActiveNode<Vector3> LineIntersectLookup(int vertInd1, int vertInd2)
+    private ActiveNode<Vector3> LineIntersectLookup(int vertInd1, int vertInd2, bool use2=false)
     {
+        if (vertInd1 >= lineLookupTable.Length || vertInd2 >= lineLookupTable.Length)
+            return null;
+        
+        if (use2)
+            return lineLookupTable2[vertInd1][vertInd2];
+        
         return lineLookupTable[vertInd1][vertInd2];
     }
 
     // Make sure to use LineIntersectLookup first
-    private void SetLineIntersect(int vertInd1, int vertInd2, ActiveNode<Vector3> newVert)
+    private void SetLineIntersect(int vertInd1, int vertInd2, ActiveNode<Vector3> newVert, bool use2=false)
     {
-        lineLookupTable[vertInd1][vertInd2] = newVert;
-        lineLookupTable[vertInd2][vertInd1] = newVert;
+        if (vertInd1 >= lineLookupTable.Length || vertInd2 >= lineLookupTable.Length)
+            return;
+            
+        if (use2)
+        {
+            lineLookupTable2[vertInd1][vertInd2] = newVert;
+            lineLookupTable2[vertInd2][vertInd1] = newVert;
+        }
+        else
+        {
+            lineLookupTable[vertInd1][vertInd2] = newVert;
+            lineLookupTable[vertInd2][vertInd1] = newVert;
+        }
     }
     
     private void ResetLineLookupTable()
@@ -322,11 +396,22 @@ public class bMesh : MonoBehaviour
                 lineLookupTable[i][j] = null;
             }
         }
+        
+        lineLookupTable2 = new ActiveNode<Vector3>[vertices.ActiveCount][];
+        for (int i = 0; i < lineLookupTable2.Length; i++)
+        {
+            lineLookupTable2[i] = new ActiveNode<Vector3>[vertices.ActiveCount];
+            for (int j = 0; j < lineLookupTable2[i].Length; j++)
+            {
+                lineLookupTable2[i][j] = null;
+            }
+        }
     }
 	
 	private int PlaneTriangleIntersection(b_Plane plane, Triangle triangle, 
         out ActiveNode<Vector3>[] intersection,
-        bool duplicateIntersectionPoints=false)
+        bool duplicateIntersectionPoints=false,
+        bool useSecondLookupTable=false)
 	{
 		intersection = new ActiveNode<Vector3>[3];
         intersection[0] = null;intersection[1] = null;intersection[2] = null;
@@ -340,19 +425,19 @@ public class bMesh : MonoBehaviour
             int vi = triangle.GetVertexIndex(i);
             int vj = triangle.GetVertexIndex(j);
             
-            if (LineIntersectLookup(vi, vj) == lineLookupBlank)
+            if (LineIntersectLookup(vi, vj, !useSecondLookupTable) == lineLookupBlank)
             {
                 nullCount++;
                 continue;
             }
-            else if (LineIntersectLookup(vi, vj) != null)
+            else if (LineIntersectLookup(vi, vj, !useSecondLookupTable) != null)
             {
-                intersection[i] = LineIntersectLookup(vi, vj);
+                intersection[i] = LineIntersectLookup(vi, vj, !useSecondLookupTable);
             }
             else if (PlaneSegmentIntersection(plane, triangle.GetVertex(i), triangle.GetVertex(j), out vec) == 1)
             {
                 intersection[i] = vertices.Add(new Vector3(vec.x, vec.y, vec.z), true);
-                SetLineIntersect(vi, vj, intersection[i]);
+                SetLineIntersect(vi, vj, intersection[i], !useSecondLookupTable);
                 
                 if (duplicateIntersectionPoints)
                 {
@@ -361,7 +446,7 @@ public class bMesh : MonoBehaviour
             }
             else
             {
-                SetLineIntersect(vi, vj, lineLookupBlank);
+                SetLineIntersect(vi, vj, lineLookupBlank, !useSecondLookupTable);
                 nullCount++;
             }
         }
