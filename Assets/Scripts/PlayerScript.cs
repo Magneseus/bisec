@@ -8,8 +8,10 @@ public class PlayerScript : MonoBehaviour
 	
 	private GameObject exBolt1;
 	private GameObject exBolt2;
+	private GameObject exGo;
 	private GameObject coBolt1;
 	private GameObject coBolt2;
+	private GameObject coGo;
 	
 	// Use this for initialization
 	void Start ()
@@ -28,10 +30,10 @@ public class PlayerScript : MonoBehaviour
 			RaycastHit hit;
 			if (Physics.Raycast(this.transform.position, transform.TransformDirection(Vector3.forward), out hit))
 			{
-				
 				if (exBolt1 == null)
 				{
 					exBolt1 = Instantiate(boltPrefab, hit.point, Quaternion.LookRotation(hit.point - this.transform.position, Vector3.up));
+					exGo = hit.collider.gameObject;
 				}
 				else if (exBolt1 != null && exBolt2 == null)
 				{
@@ -49,13 +51,12 @@ public class PlayerScript : MonoBehaviour
 					plane2.normal = -translate.normalized;
 					plane2.uPlane = new Plane(plane2.normal, plane2.location);
 					
-					GameObject go = hit.collider.gameObject;
-					while (go.GetComponent<bMesh>() != null && go.transform.parent != null)
+					while (exGo.GetComponent<bMesh>() != null && exGo.transform.parent != null)
 					{
-						go = go.transform.parent.gameObject;
+						exGo = exGo.transform.parent.gameObject;
 					}
 					
-					foreach (bMesh mesh in go.GetComponentsInChildren<bMesh>())
+					foreach (bMesh mesh in exGo.GetComponentsInChildren<bMesh>())
 					{
 						mesh.Expand(plane, plane2, 1.0f);
 					}
@@ -64,6 +65,7 @@ public class PlayerScript : MonoBehaviour
 					exBolt1 = null;
 					Destroy(exBolt2);
 					exBolt2 = null;
+					exGo = null;
 				}
 			}
 		}
@@ -76,6 +78,7 @@ public class PlayerScript : MonoBehaviour
 				if (coBolt1 == null)
 				{
 					coBolt1 = Instantiate(boltPrefab, hit.point, Quaternion.LookRotation(hit.point - this.transform.position, Vector3.up));
+					coGo = hit.collider.gameObject;
 				}
 				else if (coBolt1 != null && coBolt2 == null)
 				{
@@ -93,13 +96,12 @@ public class PlayerScript : MonoBehaviour
 					plane2.normal = -translate.normalized;
 					plane2.uPlane = new Plane(plane2.normal, plane2.location);
 					
-					GameObject go = hit.collider.gameObject;
-					while (go.GetComponent<bMesh>() != null && go.transform.parent != null)
+					while (coGo.GetComponent<bMesh>() != null && coGo.transform.parent != null)
 					{
-						go = go.transform.parent.gameObject;
+						coGo = coGo.transform.parent.gameObject;
 					}
 					
-					foreach (bMesh mesh in go.GetComponentsInChildren<bMesh>())
+					foreach (bMesh mesh in coGo.GetComponentsInChildren<bMesh>())
 					{
 						mesh.Contract(plane, plane2, 1.0f);
 					}
@@ -108,6 +110,7 @@ public class PlayerScript : MonoBehaviour
 					coBolt1 = null;
 					Destroy(coBolt2);
 					coBolt2 = null;
+					coGo = null;
 				}
 			}
 		}
@@ -125,8 +128,10 @@ public class PlayerScript : MonoBehaviour
 			
 			exBolt1 = null;
 			exBolt2 = null;
+			exGo = null;
 			coBolt1 = null;
 			coBolt2 = null;
+			coGo = null;
 		}
 	}
 }
