@@ -193,6 +193,8 @@ public class ActiveList<T> : ICollection<T>
             
             nextActive.prevActiveNode = node;
             it.nextActiveNode = node;
+            
+            ActiveCount++;
         }
         else
         {
@@ -201,7 +203,11 @@ public class ActiveList<T> : ICollection<T>
             
             node.nextActiveNode = null;
             node.prevActiveNode = null;
+            
+            ActiveCount--;
         }
+        
+        IsIndexable = false;
     }
 
     public T this[int index]
