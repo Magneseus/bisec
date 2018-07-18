@@ -31,13 +31,11 @@ public class WorldController : MonoBehaviour
             translate = planeTwo.transform.position - planeOne.transform.position;
 
             plane_.location = planeOne.transform.position;
-            plane_.normal = Vector3.up;
-            plane_.normal = planeOne.transform.rotation * plane_.normal;
+            plane_.normal = -translate.normalized;
             plane_.uPlane = new Plane(plane_.normal, plane_.location);
 
             plane2_.location = planeTwo.transform.position;
-            plane2_.normal = Vector3.up;
-            plane2_.normal = planeOne.transform.rotation * plane2_.normal;
+            plane2_.normal = -translate.normalized;
             plane2_.uPlane = new Plane(plane2_.normal, plane2_.location);
 
             cube.Contract(plane_, plane2_, 1.0f);
