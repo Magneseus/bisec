@@ -95,6 +95,13 @@ public class bMesh : MonoBehaviour
             RegenerateMesh();
             StartCoroutine(ContractTransition(timeToContract, verticesToBeTranslated2, trianglesInBetween, -translation));
         }
+        
+        // Propagate through children
+        foreach (bMesh mesh in this.GetComponentsInChildren<bMesh>())
+        {
+            if (mesh != this)
+                mesh.Contract(bisectPlane, bisectPlane2, timeToContract);
+        }
     }
     
     IEnumerator ContractTransition(float numSeconds, HashSet<ActiveNode<Vector3>> verticesToBeTranslated, List<ActiveNode<Triangle>> trianglesToRemove, Vector3 translation)
@@ -180,6 +187,12 @@ public class bMesh : MonoBehaviour
             StartCoroutine(ExpandTransition(timeToExpand, verticesToBeTranslated, translation));
             RegenerateMesh();
         }
+        
+        // Propagate through children
+        foreach (bMesh mesh in this.GetComponentsInChildren<bMesh>())
+        {
+            if (mesh != this)
+                mesh.Expand(bisectPlane, bisectPlane2, timeToExpand);
         }
     }
     
