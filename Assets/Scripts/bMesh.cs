@@ -35,7 +35,7 @@ public class bMesh : MonoBehaviour
     
     public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToContract=-1.0f)
     {
-        Vector3 translation = bisectPlane2.location - bisectPlane.location;
+        ResetLineLookupTable();
         
         // Transform the planes to local space for the mesh
         b_Plane bisectPlaneLocal;
@@ -48,7 +48,7 @@ public class bMesh : MonoBehaviour
         bisectPlaneLocal2.uPlane = new Plane(bisectPlaneLocal2.normal, bisectPlaneLocal2.location);
 
         // Transform translation to local space
-        translation = this.transform.InverseTransformDirection(translation);
+        Vector3 translation = this.transform.InverseTransformPoint(bisectPlane2.location) - bisectPlaneLocal.location;
         Vector3 translationSide = bisectPlaneLocal.location + translation;
         Vector3 translationSide2 = bisectPlaneLocal2.location - translation;
         
@@ -142,7 +142,7 @@ public class bMesh : MonoBehaviour
 	
     public void Expand(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToExpand=-1.0f)
     {
-        Vector3 translation = bisectPlane2.location - bisectPlane.location;
+        ResetLineLookupTable();
         
         // Transform the planes to local space for the mesh
         b_Plane bisectPlaneLocal;
@@ -151,7 +151,7 @@ public class bMesh : MonoBehaviour
         bisectPlaneLocal.uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
 
         // Transform translation to local space
-        translation = this.transform.InverseTransformDirection(translation);
+        Vector3 translation = this.transform.InverseTransformPoint(bisectPlane2.location) - bisectPlaneLocal.location;
         Vector3 translationSide = bisectPlaneLocal.location + translation;
         
         int triangleLen = triangles.ActiveCount;
@@ -178,6 +178,8 @@ public class bMesh : MonoBehaviour
         {
             RegenerateMesh();
             StartCoroutine(ExpandTransition(timeToExpand, verticesToBeTranslated, translation));
+            RegenerateMesh();
+        }
         }
     }
     
