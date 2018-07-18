@@ -17,10 +17,12 @@ public class bMesh : MonoBehaviour
 	private ActiveList<Triangle> triangles;
     private ActiveNode<Vector3> lineLookupBlank;
     private Mesh targetMesh;
+    private MeshCollider targetMeshCollider;
 	
 	void Start()
 	{
         targetMesh = GetComponent<MeshFilter>().mesh;
+        targetMeshCollider = GetComponent<MeshCollider>();
 
         // No Mesh target
         if (targetMesh == null)
@@ -446,6 +448,12 @@ public class bMesh : MonoBehaviour
         
         targetMesh.RecalculateNormals();
         targetMesh.RecalculateTangents();
+        targetMesh.RecalculateBounds();
+        
+        if (targetMeshCollider != null)
+        {
+            targetMeshCollider.sharedMesh = targetMesh;
+        }
     }
      
     /*
