@@ -35,6 +35,7 @@ public class Line : MonoBehaviour {
         Gizmos.color = Color.red;
         Gizmos.DrawLine(l1, l2);
 
+/*
         Bisec.b_Plane plane_;
         plane_.location = plane.position;
         plane_.normal = Vector3.up;
@@ -47,6 +48,7 @@ public class Line : MonoBehaviour {
         Bisec.PlaneSegmentIntersection(plane_, l1, l2, out intersec);
 
         Gizmos.color = Color.green;
-        Gizmos.DrawSphere(intersec, 0.2f);
+        Gizmos.DrawSphere(intersec, 0.2f);3
+ */
     }
 }
