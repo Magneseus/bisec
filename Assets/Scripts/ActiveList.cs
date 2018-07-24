@@ -162,7 +162,7 @@ public class ActiveList<T> : ICollection<T>
         return node.data;
     }
 
-    public T Set(T item, int index)
+    private T Set(T item, int index)
     {
         ActiveNode<T> node = GetNodeAt(index);
 

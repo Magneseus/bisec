@@ -23,6 +23,12 @@ public class Triangle
 		n3 = vertices.GetNodeAt(t3);
 	}
 	
+	public Triangle GetCopy()
+	{
+		Triangle t = new Triangle(n1, n2, n3);
+		return t;
+	}
+	
 	public ActiveNode<Vector3> GetNode(int index)
 	{
 		switch (index)

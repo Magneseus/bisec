@@ -10,6 +10,8 @@ public class bMesh : MonoBehaviour
         public Vector3 normal;
         public Plane uPlane;
     }
+    
+    public int MaxHistoryCount = 5;
 	
     private ActiveNode<Vector3>[][] lineLookupTable;
     private ActiveNode<Vector3>[][] lineLookupTable2;
@@ -18,6 +20,8 @@ public class bMesh : MonoBehaviour
     private ActiveNode<Vector3> lineLookupBlank;
     private Mesh targetMesh;
     private MeshCollider targetMeshCollider;
+    
+    private MeshHistory history;
 	
 	void Start()
 	{
@@ -34,6 +38,12 @@ public class bMesh : MonoBehaviour
             ResetMesh();
         }
 	}
+    
+    public void Undo()
+    {
+        history.PopChanges(triangles, vertices);
+        RegenerateMesh();
+    }
     
     public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToContract=-1.0f)
     {
@@ -83,14 +93,17 @@ public class bMesh : MonoBehaviour
             for (int i = 0; i < x; i++)
             {
                 ActiveNode<Triangle> node = trianglesInBetween[i];
-                triangles.SetActivity(node, false);
+                ChangeTriangle(node, null, true);
+                //triangles.SetActivity(node, false);
             }
             foreach (ActiveNode<Vector3> node in verticesToBeTranslated2)
             {
-                node.data -= translation;
+                ChangeVertex(node, node.data - translation, node.data);
+                //node.data -= translation;
             }
             
             RegenerateMesh();
+            history.PushChanges();
         }
         else
         {
@@ -136,17 +149,20 @@ public class bMesh : MonoBehaviour
         int i = 0;
         foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
         {
-            node.data = originalVertices[i] + translation;
+            ChangeVertex(node, originalVertices[i] + translation, originalVertices[i]);
+            //node.data = originalVertices[i] + translation;
             i++;
         }
         int x = trianglesToRemove.Count;
         for (int j = 0; j < x; j++)
         {
             ActiveNode<Triangle> node = trianglesToRemove[j];
-            triangles.SetActivity(node, false);
+            ChangeTriangle(node, null, true);
+            //triangles.SetActivity(node, false);
         }
         
         RegenerateMesh();
+        history.PushChanges();
     }
 	
     public void Expand(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToExpand=-1.0f)
@@ -179,9 +195,11 @@ public class bMesh : MonoBehaviour
         {
             foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
             {
-                node.data += translation;
+                ChangeVertex(node, node.data + translation, node.data);
+                //node.data += translation;
             }
             RegenerateMesh();
+            history.PushChanges();
         }
         else
         {
@@ -228,11 +246,13 @@ public class bMesh : MonoBehaviour
         int i = 0;
         foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
         {
-            node.data = originalVertices[i] + translation;
+            ChangeVertex(node, originalVertices[i] + translation, originalVertices[i]);
+            //node.data = originalVertices[i] + translation;
             i++;
         }
         
         RegenerateMesh();
+        history.PushChanges();
     }
 	
     
@@ -240,6 +260,36 @@ public class bMesh : MonoBehaviour
 	/*
 	    Helper Functions
 	*/
+    
+    private void ChangeVertex(ActiveNode<Vector3> node, Vector3 newVal, Vector3 oldVal, bool activityToggle=false)
+    {
+        history.AddChange(node, oldVal, activityToggle);
+        
+        if (newVal != null)
+        {
+            node.data = newVal;
+        }
+        
+        if (activityToggle)
+        {
+            vertices.SetActivity(node, !node.IsActive());
+        }
+    }
+    
+    private void ChangeTriangle(ActiveNode<Triangle> node, Triangle newVal, bool activityToggle=false)
+    {
+        history.AddChange(node, node.data, activityToggle);
+        
+        if (newVal != null)
+        {
+            node.data = newVal;
+        }
+        
+        if (activityToggle)
+        {
+            triangles.SetActivity(node, !node.IsActive());
+        }
+    }
     
     private void TriangleBisection(b_Plane plane, Vector3 translationSide, ActiveNode<Triangle> triangleNode,
         HashSet<ActiveNode<Vector3>> verticesToBeTranslated,
@@ -405,6 +455,7 @@ public class bMesh : MonoBehaviour
     {
         vertices = new ActiveList<Vector3>();
         triangles = new ActiveList<Triangle>();
+        history = new MeshHistory(MaxHistoryCount);
         
         foreach (Vector3 v in targetMesh.vertices)
 		{

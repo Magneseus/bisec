@@ -26,6 +26,7 @@ public class WorldController : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        /*
 		if (Input.GetKeyDown(KeyCode.E))
         {
             translate = planeTwo.transform.position - planeOne.transform.position;
@@ -51,5 +52,6 @@ public class WorldController : MonoBehaviour
             cube.GetComponent<MeshFilter>().mesh.RecalculateTangents();
             cube.ResetMesh();
         }
+        */
 	}
 }

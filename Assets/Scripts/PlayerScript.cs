@@ -13,6 +13,8 @@ public class PlayerScript : MonoBehaviour
 	private GameObject coBolt2;
 	private GameObject coGo;
 	
+	private bMesh[] tmp;
+	
 	// Use this for initialization
 	void Start ()
 	{
@@ -55,8 +57,8 @@ public class PlayerScript : MonoBehaviour
 					{
 						exGo = exGo.transform.parent.gameObject;
 					}
-					
-					foreach (bMesh mesh in exGo.GetComponentsInChildren<bMesh>())
+					tmp = exGo.GetComponentsInChildren<bMesh>();
+					foreach (bMesh mesh in tmp)
 					{
 						mesh.Expand(plane, plane2, 1.0f);
 					}
@@ -100,8 +102,8 @@ public class PlayerScript : MonoBehaviour
 					{
 						coGo = coGo.transform.parent.gameObject;
 					}
-					
-					foreach (bMesh mesh in coGo.GetComponentsInChildren<bMesh>())
+					tmp = coGo.GetComponentsInChildren<bMesh>();
+					foreach (bMesh mesh in tmp)
 					{
 						mesh.Contract(plane, plane2, 1.0f);
 					}
@@ -116,6 +118,14 @@ public class PlayerScript : MonoBehaviour
 		}
 		
 		if (Input.GetKeyDown(KeyCode.R))
+		{
+			foreach (bMesh mesh in tmp)
+			{
+				mesh.Undo();
+			}
+		}
+		
+		if (Input.GetKeyDown(KeyCode.Space))
 		{
 			if (exBolt1 != null)
 				Destroy(exBolt1);
