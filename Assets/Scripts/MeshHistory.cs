@@ -63,6 +63,9 @@ public class MeshHistory
 		runningVertexChanges = vertexStack[vertexStack.Count-1];
 		vertexStack.RemoveAt(vertexStack.Count-1);
 		
+		runningTriangleChanges.Reverse();
+		runningVertexChanges.Reverse();
+		
 		foreach (Triangle_Change t in runningTriangleChanges)
 		{
 			if (t.oldData != null)
