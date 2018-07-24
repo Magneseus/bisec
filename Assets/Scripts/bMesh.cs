@@ -42,7 +42,7 @@ public class bMesh : MonoBehaviour
     public void Undo()
     {
         history.PopChanges(triangles, vertices);
-        RegenerateMesh();
+        RegenerateMesh(true);
     }
     
     public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToContract=-1.0f)
@@ -261,6 +261,14 @@ public class bMesh : MonoBehaviour
 	    Helper Functions
 	*/
     
+    private ActiveNode<Vector3> AddVertex(Vector3 vertex, bool active=true)
+    {
+        ActiveNode<Vector3> ret = vertices.Add(vertex, active);
+        history.AddChange(ret, ret.data, false, true);
+        
+        return ret;
+    }
+    
     private void ChangeVertex(ActiveNode<Vector3> node, Vector3 newVal, Vector3 oldVal, bool activityToggle=false)
     {
         history.AddChange(node, oldVal, activityToggle);
@@ -274,6 +282,14 @@ public class bMesh : MonoBehaviour
         {
             vertices.SetActivity(node, !node.IsActive());
         }
+    }
+    
+    private ActiveNode<Triangle> AddTriangle(Triangle triangle, bool active=true)
+    {
+        ActiveNode<Triangle> ret = triangles.Add(triangle, active);
+        history.AddChange(ret, null, false, true);
+        
+        return ret;
     }
     
     private void ChangeTriangle(ActiveNode<Triangle> node, Triangle newVal, bool activityToggle=false)
@@ -420,22 +436,22 @@ public class bMesh : MonoBehaviour
         // Make the new quad bridging the parts of the triangle
         if (duplicateIntersectionPoints)
         {
-            triangles.Add(new Triangle(single1T, single1, single2));
-            triangles.Add(new Triangle(single2T, single1T, single2));
+            AddTriangle(new Triangle(single1T, single1, single2));
+            AddTriangle(new Triangle(single2T, single1T, single2));
         }
 
         // Make the quad "base" of the bisected triangle
-        ActiveNode<Triangle> t1 = triangles.Add(new Triangle(
+        ActiveNode<Triangle> t1 = AddTriangle(new Triangle(
                 triangle.GetNode((singleInd + 1) % 3),
                 triangle.GetNode((singleInd + 2) % 3),
                 single1), true);
-        ActiveNode<Triangle> t2 = triangles.Add(new Triangle(
+        ActiveNode<Triangle> t2 = AddTriangle(new Triangle(
                 single2,
                 single1,
                 triangle.GetNode((singleInd + 2) % 3)), true);
         
         // Remake the "tip" of the triangle
-        triangle.SetNodes(triangle.GetNode(singleInd), single1T, single2T);
+        ChangeTriangle(triangleNode, new Triangle(triangle.GetNode(singleInd), single1T, single2T));
         
         if (trianglesInBetween != null)
         {
@@ -475,7 +491,7 @@ public class bMesh : MonoBehaviour
         ResetLineLookupTable();
     }
     
-    private void RegenerateMesh()
+    private void RegenerateMesh(bool reverse=false)
     {
         List<Vector3> newVertices = new List<Vector3>();
         int[] newTriangles = new int[triangles.ActiveCount * 3];
@@ -494,8 +510,16 @@ public class bMesh : MonoBehaviour
             ind += 3;
         }
         
-        targetMesh.SetVertices(newVertices);
-        targetMesh.SetTriangles(newTriangles, 0);
+        if (!reverse)
+        {
+            targetMesh.SetVertices(newVertices);
+            targetMesh.SetTriangles(newTriangles, 0);
+        }
+        else
+        {
+            targetMesh.SetTriangles(newTriangles, 0);
+            targetMesh.SetVertices(newVertices);
+        }
         
         targetMesh.RecalculateNormals();
         targetMesh.RecalculateTangents();
@@ -598,12 +622,12 @@ public class bMesh : MonoBehaviour
             }
             else if (PlaneSegmentIntersection(plane, triangle.GetVertex(i), triangle.GetVertex(j), out vec) == 1)
             {
-                intersection[i] = vertices.Add(new Vector3(vec.x, vec.y, vec.z), true);
+                intersection[i] = AddVertex(new Vector3(vec.x, vec.y, vec.z), true);
                 SetLineIntersect(vi, vj, intersection[i], !useSecondLookupTable);
                 
                 if (duplicateIntersectionPoints)
                 {
-                    vertices.Add(new Vector3(vec.x, vec.y, vec.z), true);
+                    AddVertex(new Vector3(vec.x, vec.y, vec.z), true);
                 }
             }
             else

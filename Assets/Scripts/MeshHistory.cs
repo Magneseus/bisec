@@ -8,6 +8,7 @@ public class MeshHistory
 		public ActiveNode<Triangle> node;
 		public Triangle oldData;
 		public bool activityToggle;
+		public bool newNode;
 	}
 	
 	private struct Vertex_Change
@@ -15,6 +16,7 @@ public class MeshHistory
 		public ActiveNode<Vector3> node;
 		public Vector3 oldData;
 		public bool activityToggle;
+		public bool newNode;
 	}
 	
 	public int MaxCount;
@@ -72,18 +74,28 @@ public class MeshHistory
 			{
 				triangleList.SetActivity(t.node, t.node.IsActive());
 			}
+			
+			if (t.newNode)
+			{
+				triangleList.Remove(t.node);
+			}
 		}
 		
-		foreach (Vertex_Change t in runningVertexChanges)
+		foreach (Vertex_Change v in runningVertexChanges)
 		{
-			if (t.oldData != null)
+			if (v.oldData != null)
 			{
-				t.node.data = t.oldData;
+				v.node.data = v.oldData;
 			}
 			
-			if (t.activityToggle)
+			if (v.activityToggle)
 			{
-				vertexList.SetActivity(t.node, t.node.IsActive());
+				vertexList.SetActivity(v.node, v.node.IsActive());
+			}
+			
+			if (v.newNode)
+			{
+				vertexList.Remove(v.node);
 			}
 		}
 		
@@ -91,20 +103,24 @@ public class MeshHistory
 		runningVertexChanges = new List<Vertex_Change>(); 
 	}
 	
-	public void AddChange(ActiveNode<Triangle> node, Triangle oldData, bool activityToggle)
+	public void AddChange(ActiveNode<Triangle> node, Triangle oldData, bool activityToggle, bool newNode=false)
 	{
 		if (MaxCount <= 0)
 			return;
 		
 		Triangle_Change t;
 		t.node = node;
-		t.oldData = oldData.GetCopy();
+		if (oldData != null)
+			t.oldData = oldData.GetCopy();
+		else
+			t.oldData = null;
 		t.activityToggle = activityToggle;
+		t.newNode = newNode;
 		
 		runningTriangleChanges.Add(t);
 	}
 	
-	public void AddChange(ActiveNode<Vector3> node, Vector3 oldData, bool activityToggle)
+	public void AddChange(ActiveNode<Vector3> node, Vector3 oldData, bool activityToggle, bool newNode=false)
 	{
 		if (MaxCount <= 0)
 			return;
@@ -113,6 +129,7 @@ public class MeshHistory
 		v.node = node;
 		v.oldData = new Vector3(oldData.x, oldData.y, oldData.z);
 		v.activityToggle = activityToggle;
+		v.newNode = newNode;
 		
 		runningVertexChanges.Add(v);
 	}

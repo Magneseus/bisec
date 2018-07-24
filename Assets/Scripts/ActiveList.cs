@@ -121,9 +121,12 @@ public class ActiveList<T> : ICollection<T>
 
             pNode.nextNode = nNode;
             nNode.prevNode = pNode;
-
-            paNode.nextActiveNode = naNode;
-            naNode.prevActiveNode = paNode;
+            
+            if (paNode != null)
+            {
+                paNode.nextActiveNode = naNode;
+                naNode.prevActiveNode = paNode;
+            }
 
             if (nodeToRemove.IsActive())
                 ActiveCount--;
