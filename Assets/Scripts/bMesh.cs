@@ -43,6 +43,13 @@ public class bMesh : MonoBehaviour
     {
         history.PopChanges(triangles, vertices);
         RegenerateMesh(true);
+        
+        // Propagate through children
+        foreach (bMesh mesh in this.GetComponentsInChildren<bMesh>())
+        {
+            if (mesh != this)
+                mesh.Undo();
+        }
     }
     
     public void Contract(b_Plane bisectPlane, b_Plane bisectPlane2, float timeToContract=-1.0f)

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
@@ -13,7 +12,7 @@ public class PlayerScript : MonoBehaviour
 	private GameObject coBolt2;
 	private GameObject coGo;
 	
-	private bMesh[] tmp;
+	private Stack<List<bMesh>> undoStack;
 	
 	// Use this for initialization
 	void Start ()
@@ -22,6 +21,8 @@ public class PlayerScript : MonoBehaviour
 		exBolt2 = null;
 		coBolt1 = null;
 		coBolt2 = null;
+		
+		undoStack = new Stack<List<bMesh>>();
 	}
 	
 	// Update is called once per frame
@@ -57,8 +58,9 @@ public class PlayerScript : MonoBehaviour
 					{
 						exGo = exGo.transform.parent.gameObject;
 					}
-					tmp = exGo.GetComponentsInChildren<bMesh>();
-					foreach (bMesh mesh in tmp)
+					
+					undoStack.Push(new List<bMesh>(exGo.GetComponentsInChildren<bMesh>()));
+					foreach (bMesh mesh in exGo.GetComponentsInChildren<bMesh>())
 					{
 						mesh.Expand(plane, plane2, 1.0f);
 					}
@@ -102,8 +104,8 @@ public class PlayerScript : MonoBehaviour
 					{
 						coGo = coGo.transform.parent.gameObject;
 					}
-					tmp = coGo.GetComponentsInChildren<bMesh>();
-					foreach (bMesh mesh in tmp)
+					undoStack.Push(new List<bMesh>(coGo.GetComponentsInChildren<bMesh>()));
+					foreach (bMesh mesh in coGo.GetComponentsInChildren<bMesh>())
 					{
 						mesh.Contract(plane, plane2, 1.0f);
 					}
@@ -119,9 +121,12 @@ public class PlayerScript : MonoBehaviour
 		
 		if (Input.GetKeyDown(KeyCode.R))
 		{
-			foreach (bMesh mesh in tmp)
+			if (undoStack.Count > 0)
 			{
-				mesh.Undo();
+				foreach (bMesh mesh in undoStack.Pop())
+				{
+					mesh.Undo();
+				}
 			}
 		}
 		

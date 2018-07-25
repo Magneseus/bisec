@@ -185,17 +185,17 @@ public class ActiveList<T> : ICollection<T>
             ActiveNode<T> it = node;
             while (!it.IsActive())
             {
-                it = it.prevNode;
+                it = it.nextNode;
                 if (it.isRootNode)
                     break;
             }
             
-            ActiveNode<T> nextActive = it.nextActiveNode;
-            node.prevActiveNode = it;
-            node.nextActiveNode = nextActive;
+            ActiveNode<T> prevActive = it.prevActiveNode;
+            node.nextActiveNode = it;
+            node.prevActiveNode = prevActive;
             
-            nextActive.prevActiveNode = node;
-            it.nextActiveNode = node;
+            prevActive.nextActiveNode = node;
+            it.prevActiveNode = node;
             
             ActiveCount++;
         }
