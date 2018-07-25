@@ -75,7 +75,7 @@ public class MeshHistory
 			
 			if (t.activityToggle)
 			{
-				triangleList.SetActivity(t.node, t.node.IsActive());
+				triangleList.SetActivity(t.node, !t.node.IsActive());
 			}
 			
 			if (t.newNode)
@@ -93,7 +93,7 @@ public class MeshHistory
 			
 			if (v.activityToggle)
 			{
-				vertexList.SetActivity(v.node, v.node.IsActive());
+				vertexList.SetActivity(v.node, !v.node.IsActive());
 			}
 			
 			if (v.newNode)
