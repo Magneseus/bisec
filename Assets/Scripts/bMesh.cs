@@ -150,7 +150,7 @@ public class bMesh : MonoBehaviour
             RegenerateMesh();
             
             currentTime = Time.realtimeSinceStartup;
-            yield return new WaitForFixedUpdate();
+            yield return new WaitForEndOfFrame();
         }
         
         int i = 0;
@@ -247,7 +247,7 @@ public class bMesh : MonoBehaviour
             RegenerateMesh();
             
             currentTime = Time.realtimeSinceStartup;
-            yield return new WaitForFixedUpdate();
+            yield return new WaitForEndOfFrame();
         }
         
         int i = 0;

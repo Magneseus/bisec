@@ -4,6 +4,7 @@ using UnityEngine;
 public class PlayerScript : MonoBehaviour
 {
 	public GameObject boltPrefab;
+	public float timeToMove = 10.0f;
 	
 	private GameObject exBolt1;
 	private GameObject exBolt2;
@@ -62,7 +63,7 @@ public class PlayerScript : MonoBehaviour
 					undoStack.Push(new List<bMesh>(exGo.GetComponentsInChildren<bMesh>()));
 					foreach (bMesh mesh in exGo.GetComponentsInChildren<bMesh>())
 					{
-						mesh.Expand(plane, plane2, 1.0f);
+						mesh.Expand(plane, plane2, timeToMove);
 					}
 					
 					Destroy(exBolt1);
@@ -107,7 +108,7 @@ public class PlayerScript : MonoBehaviour
 					undoStack.Push(new List<bMesh>(coGo.GetComponentsInChildren<bMesh>()));
 					foreach (bMesh mesh in coGo.GetComponentsInChildren<bMesh>())
 					{
-						mesh.Contract(plane, plane2, 1.0f);
+						mesh.Contract(plane, plane2, timeToMove);
 					}
 					
 					Destroy(coBolt1);
@@ -119,7 +120,7 @@ public class PlayerScript : MonoBehaviour
 			}
 		}
 		
-		if (Input.GetKeyDown(KeyCode.R))
+		if (Input.GetKeyDown(KeyCode.Q))
 		{
 			if (undoStack.Count > 0)
 			{
@@ -130,7 +131,7 @@ public class PlayerScript : MonoBehaviour
 			}
 		}
 		
-		if (Input.GetKeyDown(KeyCode.Space))
+		if (Input.GetKeyDown(KeyCode.R))
 		{
 			if (exBolt1 != null)
 				Destroy(exBolt1);
