@@ -811,7 +811,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boltPrefab: {fileID: 1182598532267662, guid: c491f8f789743fa488b6027852d9c2c4, type: 2}
-  timeToMove: 10
+  timeToMove: 1
 --- !u!1 &1378909839
 GameObject:
   m_ObjectHideFlags: 0
