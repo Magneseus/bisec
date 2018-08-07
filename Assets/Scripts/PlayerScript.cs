@@ -4,7 +4,7 @@ using UnityEngine;
 public class PlayerScript : MonoBehaviour
 {
 	public GameObject boltPrefab;
-	public float timeToMove = 10.0f;
+	public float timeToMove = 0.0f;
 	
 	private GameObject exBolt1;
 	private GameObject exBolt2;
@@ -60,10 +60,23 @@ public class PlayerScript : MonoBehaviour
 						exGo = exGo.transform.parent.gameObject;
 					}
 					
-					undoStack.Push(new List<bMesh>(exGo.GetComponentsInChildren<bMesh>()));
-					foreach (bMesh mesh in exGo.GetComponentsInChildren<bMesh>())
+					if (exGo.GetComponent<bMesh>() == null)
 					{
-						mesh.Expand(plane, plane2, timeToMove);
+						undoStack.Push(new List<bMesh>(exGo.GetComponentsInChildren<bMesh>()));
+						float startTime = Time.realtimeSinceStartup;
+						foreach (bMesh mesh in exGo.GetComponentsInChildren<bMesh>())
+						{
+							mesh.Expand(plane, plane2, timeToMove);
+						}
+					}
+					else
+					{
+						bMesh meshParent = exGo.GetComponent<bMesh>();
+						List<bMesh> undoList = new List<bMesh>();
+						undoList.Add(meshParent);
+						undoStack.Push(undoList);
+						
+						meshParent.Expand(plane, plane2, timeToMove);
 					}
 					
 					Destroy(exBolt1);
@@ -105,10 +118,24 @@ public class PlayerScript : MonoBehaviour
 					{
 						coGo = coGo.transform.parent.gameObject;
 					}
-					undoStack.Push(new List<bMesh>(coGo.GetComponentsInChildren<bMesh>()));
-					foreach (bMesh mesh in coGo.GetComponentsInChildren<bMesh>())
+					
+					if (coGo.GetComponent<bMesh>() == null)
 					{
-						mesh.Contract(plane, plane2, timeToMove);
+						undoStack.Push(new List<bMesh>(coGo.GetComponentsInChildren<bMesh>()));
+						float startTime = Time.realtimeSinceStartup;
+						foreach (bMesh mesh in coGo.GetComponentsInChildren<bMesh>())
+						{
+							mesh.Contract(plane, plane2, timeToMove);
+						}
+					}
+					else
+					{
+						bMesh meshParent = coGo.GetComponent<bMesh>();
+						List<bMesh> undoList = new List<bMesh>();
+						undoList.Add(meshParent);
+						undoStack.Push(undoList);
+						
+						meshParent.Contract(plane, plane2, timeToMove);
 					}
 					
 					Destroy(coBolt1);

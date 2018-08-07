@@ -65,7 +65,7 @@ public class bMesh : MonoBehaviour
         bisectPlaneLocal2.location = this.transform.InverseTransformPoint(bisectPlane2.location);
         bisectPlaneLocal2.normal = this.transform.InverseTransformDirection(bisectPlane2.normal);
         bisectPlaneLocal2.uPlane = new Plane(bisectPlaneLocal2.normal, bisectPlaneLocal2.location);
-
+        
         // Transform translation to local space
         Vector3 translation = this.transform.InverseTransformPoint(bisectPlane2.location) - bisectPlaneLocal.location;
         Vector3 translationSide = bisectPlaneLocal.location + translation;
