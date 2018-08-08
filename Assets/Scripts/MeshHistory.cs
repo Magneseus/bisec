@@ -13,8 +13,8 @@ public class MeshHistory
 	
 	private struct Vertex_Change
 	{
-		public ActiveNode<Vector3> node;
-		public Vector3 oldData;
+		public ActiveNode<bVertex> node;
+		public bVertex oldData;
 		public bool activityToggle;
 		public bool newNode;
 	}
@@ -53,7 +53,7 @@ public class MeshHistory
 		runningVertexChanges = new List<Vertex_Change>();
 	}
 	
-	public void PopChanges(ActiveList<Triangle> triangleList, ActiveList<Vector3> vertexList)
+	public void PopChanges(ActiveList<Triangle> triangleList, ActiveList<bVertex> vertexList)
 	{
 		if (triangleStack.Count <= 0)
 			return;
@@ -123,14 +123,14 @@ public class MeshHistory
 		runningTriangleChanges.Add(t);
 	}
 	
-	public void AddChange(ActiveNode<Vector3> node, Vector3 oldData, bool activityToggle, bool newNode=false)
+	public void AddChange(ActiveNode<bVertex> node, bVertex oldData, bool activityToggle, bool newNode=false)
 	{
 		if (MaxCount <= 0)
 			return;
 		
 		Vertex_Change v;
 		v.node = node;
-		v.oldData = new Vector3(oldData.x, oldData.y, oldData.z);
+		v.oldData = oldData.GetCopy();
 		v.activityToggle = activityToggle;
 		v.newNode = newNode;
 		

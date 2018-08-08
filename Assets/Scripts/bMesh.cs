@@ -13,11 +13,11 @@ public class bMesh : MonoBehaviour
     
     public int MaxHistoryCount = 5;
 	
-    private ActiveNode<Vector3>[][] lineLookupTable;
-    private ActiveNode<Vector3>[][] lineLookupTable2;
-	private ActiveList<Vector3> vertices;
+    private ActiveNode<bVertex>[][] lineLookupTable;
+    private ActiveNode<bVertex>[][] lineLookupTable2;
+	private ActiveList<bVertex> vertices;
 	private ActiveList<Triangle> triangles;
-    private ActiveNode<Vector3> lineLookupBlank;
+    private ActiveNode<bVertex> lineLookupBlank;
     private Mesh targetMesh;
     private MeshCollider targetMeshCollider;
     
@@ -74,8 +74,8 @@ public class bMesh : MonoBehaviour
         int triangleLen = triangles.ActiveCount;
         int verticesLen = vertices.ActiveCount;
         
-        HashSet<ActiveNode<Vector3>> verticesToBeTranslated = new HashSet<ActiveNode<Vector3>>();
-        HashSet<ActiveNode<Vector3>> verticesToBeTranslated2 = new HashSet<ActiveNode<Vector3>>();
+        HashSet<ActiveNode<bVertex>> verticesToBeTranslated = new HashSet<ActiveNode<bVertex>>();
+        HashSet<ActiveNode<bVertex>> verticesToBeTranslated2 = new HashSet<ActiveNode<bVertex>>();
         List<ActiveNode<Triangle>> trianglesInBetween = new List<ActiveNode<Triangle>>();
         List<ActiveNode<Triangle>> trianglesNotTranslated = new List<ActiveNode<Triangle>>();
         
@@ -103,9 +103,11 @@ public class bMesh : MonoBehaviour
                 ChangeTriangle(node, null, true);
                 //triangles.SetActivity(node, false);
             }
-            foreach (ActiveNode<Vector3> node in verticesToBeTranslated2)
+            foreach (ActiveNode<bVertex> node in verticesToBeTranslated2)
             {
-                ChangeVertex(node, node.data - translation, node.data);
+                bVertex newVert = node.data.GetCopy();
+                newVert.vertex += translation;
+                ChangeVertex(node, newVert, node.data);
                 //node.data -= translation;
             }
             
@@ -126,24 +128,24 @@ public class bMesh : MonoBehaviour
         }
     }
     
-    IEnumerator ContractTransition(float numSeconds, HashSet<ActiveNode<Vector3>> verticesToBeTranslated, List<ActiveNode<Triangle>> trianglesToRemove, Vector3 translation)
+    IEnumerator ContractTransition(float numSeconds, HashSet<ActiveNode<bVertex>> verticesToBeTranslated, List<ActiveNode<Triangle>> trianglesToRemove, Vector3 translation)
     {
         float endTime = Time.realtimeSinceStartup + numSeconds;
         float currentTime = Time.realtimeSinceStartup;
         
         List<Vector3> originalVertices = new List<Vector3>();
-        foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+        foreach (ActiveNode<bVertex> node in verticesToBeTranslated)
         {
-            originalVertices.Add(new Vector3(node.data.x, node.data.y, node.data.z));
+            originalVertices.Add(new Vector3(node.data.vertex.x, node.data.vertex.y, node.data.vertex.z));
         }
         
         while (currentTime < endTime)
         {
             float t = 1.0f - ((endTime - currentTime) / numSeconds);
             int _i = 0;
-            foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+            foreach (ActiveNode<bVertex> node in verticesToBeTranslated)
             {
-                node.data = Vector3.Lerp(originalVertices[_i], originalVertices[_i] + translation, t);
+                node.data.vertex = Vector3.Lerp(originalVertices[_i], originalVertices[_i] + translation, t);
                 _i++;
             }
             
@@ -154,9 +156,13 @@ public class bMesh : MonoBehaviour
         }
         
         int i = 0;
-        foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+        foreach (ActiveNode<bVertex> node in verticesToBeTranslated)
         {
-            ChangeVertex(node, originalVertices[i] + translation, originalVertices[i]);
+            bVertex newVert = node.data.GetCopy();
+            newVert.vertex = originalVertices[i] + translation;
+            node.data.vertex = originalVertices[i];
+            
+            ChangeVertex(node, newVert, node.data);
             //node.data = originalVertices[i] + translation;
             i++;
         }
@@ -189,7 +195,7 @@ public class bMesh : MonoBehaviour
         int triangleLen = triangles.ActiveCount;
         int verticesLen = vertices.ActiveCount;
         
-        HashSet<ActiveNode<Vector3>> verticesToBeTranslated = new HashSet<ActiveNode<Vector3>>();
+        HashSet<ActiveNode<bVertex>> verticesToBeTranslated = new HashSet<ActiveNode<bVertex>>();
         
         ActiveNode<Triangle> it = triangles.GetRootNode().nextActiveNode;
         for (int i = 0; i < triangleLen; i++)
@@ -200,9 +206,11 @@ public class bMesh : MonoBehaviour
         
         if (timeToExpand < 0.0f)
         {
-            foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+            foreach (ActiveNode<bVertex> node in verticesToBeTranslated)
             {
-                ChangeVertex(node, node.data + translation, node.data);
+                bVertex newVert = node.data.GetCopy();
+                newVert.vertex += translation;
+                ChangeVertex(node, newVert, node.data);
                 //node.data += translation;
             }
             RegenerateMesh();
@@ -223,24 +231,24 @@ public class bMesh : MonoBehaviour
         }
     }
     
-    IEnumerator ExpandTransition(float numSeconds, HashSet<ActiveNode<Vector3>> verticesToBeTranslated, Vector3 translation)
+    IEnumerator ExpandTransition(float numSeconds, HashSet<ActiveNode<bVertex>> verticesToBeTranslated, Vector3 translation)
     {
         float endTime = Time.realtimeSinceStartup + numSeconds;
         float currentTime = Time.realtimeSinceStartup;
         
         List<Vector3> originalVertices = new List<Vector3>();
-        foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+        foreach (ActiveNode<bVertex> node in verticesToBeTranslated)
         {
-            originalVertices.Add(new Vector3(node.data.x, node.data.y, node.data.z));
+            originalVertices.Add(new Vector3(node.data.vertex.x, node.data.vertex.y, node.data.vertex.z));
         }
         
         while (currentTime < endTime)
         {
             float t = 1.0f - ((endTime - currentTime) / numSeconds);
             int _i = 0;
-            foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+            foreach (ActiveNode<bVertex> node in verticesToBeTranslated)
             {
-                node.data = Vector3.Lerp(originalVertices[_i], originalVertices[_i] + translation, t);
+                node.data.vertex = Vector3.Lerp(originalVertices[_i], originalVertices[_i] + translation, t);
                 _i++;
             }
             
@@ -251,9 +259,13 @@ public class bMesh : MonoBehaviour
         }
         
         int i = 0;
-        foreach (ActiveNode<Vector3> node in verticesToBeTranslated)
+        foreach (ActiveNode<bVertex> node in verticesToBeTranslated)
         {
-            ChangeVertex(node, originalVertices[i] + translation, originalVertices[i]);
+            bVertex newVert = node.data.GetCopy();
+            newVert.vertex = originalVertices[i] + translation;
+            node.data.vertex = originalVertices[i];
+            
+            ChangeVertex(node, newVert, node.data);
             //node.data = originalVertices[i] + translation;
             i++;
         }
@@ -268,15 +280,15 @@ public class bMesh : MonoBehaviour
 	    Helper Functions
 	*/
     
-    private ActiveNode<Vector3> AddVertex(Vector3 vertex, bool active=true)
+    private ActiveNode<bVertex> AddVertex(bVertex vertex, bool active=true)
     {
-        ActiveNode<Vector3> ret = vertices.Add(vertex, active);
+        ActiveNode<bVertex> ret = vertices.Add(vertex, active);
         history.AddChange(ret, ret.data, false, true);
         
         return ret;
     }
     
-    private void ChangeVertex(ActiveNode<Vector3> node, Vector3 newVal, Vector3 oldVal, bool activityToggle=false)
+    private void ChangeVertex(ActiveNode<bVertex> node, bVertex newVal, bVertex oldVal, bool activityToggle=false)
     {
         history.AddChange(node, oldVal, activityToggle);
         
@@ -315,12 +327,12 @@ public class bMesh : MonoBehaviour
     }
     
     private void TriangleBisection(b_Plane plane, Vector3 translationSide, ActiveNode<Triangle> triangleNode,
-        HashSet<ActiveNode<Vector3>> verticesToBeTranslated,
+        HashSet<ActiveNode<bVertex>> verticesToBeTranslated,
         List<ActiveNode<Triangle>> trianglesInBetween=null,
         bool useSecondLookupTable=false)
     {
         Triangle triangle = triangleNode.data;
-        ActiveNode<Vector3>[] ints;
+        ActiveNode<bVertex>[] ints;
         
         bool duplicateIntersectionPoints = trianglesInBetween == null;
         
@@ -377,10 +389,10 @@ public class bMesh : MonoBehaviour
         bool translatedVertex = plane.uPlane.SameSide(triangle.GetVertex(singleInd), translationSide) ? true : false;
         
         // Get the generated intersection points
-        ActiveNode<Vector3> single1 = ints[singleInd];
-        ActiveNode<Vector3> single1T = single1.nextActiveNode;
-        ActiveNode<Vector3> single2 = ints[(singleInd + 2) % 3];
-        ActiveNode<Vector3> single2T = single2.nextActiveNode;
+        ActiveNode<bVertex> single1 = ints[singleInd];
+        ActiveNode<bVertex> single1T = single1.nextActiveNode;
+        ActiveNode<bVertex> single2 = ints[(singleInd + 2) % 3];
+        ActiveNode<bVertex> single2T = single2.nextActiveNode;
         
         // Add the single1T and single2T to the list
         if (!useSecondLookupTable)
@@ -476,13 +488,13 @@ public class bMesh : MonoBehaviour
     
     public void ResetMesh()
     {
-        vertices = new ActiveList<Vector3>();
+        vertices = new ActiveList<bVertex>();
         triangles = new ActiveList<Triangle>();
         history = new MeshHistory(MaxHistoryCount);
         
-        foreach (Vector3 v in targetMesh.vertices)
+        for (int i = 0; i < targetMesh.vertices.Length; i++)
 		{
-			vertices.Add(v);
+			vertices.Add(new bVertex(targetMesh.vertices[i], targetMesh.uv[i]));
 		}
 		
 		for (int i = 0; i < targetMesh.triangles.Length; i += 3)
@@ -493,20 +505,32 @@ public class bMesh : MonoBehaviour
 					targetMesh.triangles[i+2]));
 		}
         
-        lineLookupBlank = new ActiveNode<Vector3>();
+        lineLookupBlank = new ActiveNode<bVertex>();
         lineLookupBlank.isRootNode = true;
         ResetLineLookupTable();
     }
     
     private void RegenerateMesh(bool reverse=false)
     {
-        List<Vector3> newVertices = new List<Vector3>();
+        List<bVertex> newBVertices = new List<bVertex>();
         int[] newTriangles = new int[triangles.ActiveCount * 3];
         
-        vertices.CopyActiveTo(newVertices);
+        vertices.CopyActiveTo(newBVertices);
+        
+        Vector3[] newVertices = new Vector3[newBVertices.Count];
+        Vector2[] newUV = new Vector2[newBVertices.Count];
+        
+        int ind = 0;
+        foreach (bVertex v in newBVertices)
+        {
+            newVertices[ind] = v.vertex;
+            newUV[ind] = v.uv;
+            
+            ind++;
+        }
         
         ActiveNode<Triangle> it = triangles.GetRootNode().nextActiveNode;
-        int ind = 0;
+        ind = 0;
         while (!it.isRootNode)
         {
             newTriangles[ind] = it.data.GetNode(0).activeIndex;
@@ -517,6 +541,7 @@ public class bMesh : MonoBehaviour
             ind += 3;
         }
         
+        /*
         if (!reverse)
         {
             targetMesh.SetVertices(newVertices);
@@ -527,6 +552,11 @@ public class bMesh : MonoBehaviour
             targetMesh.SetTriangles(newTriangles, 0);
             targetMesh.SetVertices(newVertices);
         }
+        */
+        targetMesh.Clear();
+        targetMesh.vertices = newVertices;
+        targetMesh.uv = newUV;
+        targetMesh.triangles = newTriangles;
         
         targetMesh.RecalculateNormals();
         targetMesh.RecalculateTangents();
@@ -548,7 +578,7 @@ public class bMesh : MonoBehaviour
      * The returned index + 1 represents the index of the secondary vertex created
      * and translated.
      */
-    private ActiveNode<Vector3> LineIntersectLookup(int vertInd1, int vertInd2, bool use2=false)
+    private ActiveNode<bVertex> LineIntersectLookup(int vertInd1, int vertInd2, bool use2=false)
     {
         if (vertInd1 >= lineLookupTable.Length || vertInd2 >= lineLookupTable.Length)
             return null;
@@ -560,7 +590,7 @@ public class bMesh : MonoBehaviour
     }
 
     // Make sure to use LineIntersectLookup first
-    private void SetLineIntersect(int vertInd1, int vertInd2, ActiveNode<Vector3> newVert, bool use2=false)
+    private void SetLineIntersect(int vertInd1, int vertInd2, ActiveNode<bVertex> newVert, bool use2=false)
     {
         if (vertInd1 >= lineLookupTable.Length || vertInd2 >= lineLookupTable.Length)
             return;
@@ -580,20 +610,20 @@ public class bMesh : MonoBehaviour
     private void ResetLineLookupTable()
     {
         // Create the line lookup table
-        lineLookupTable = new ActiveNode<Vector3>[vertices.ActiveCount][];
+        lineLookupTable = new ActiveNode<bVertex>[vertices.ActiveCount][];
         for (int i = 0; i < lineLookupTable.Length; i++)
         {
-            lineLookupTable[i] = new ActiveNode<Vector3>[vertices.ActiveCount];
+            lineLookupTable[i] = new ActiveNode<bVertex>[vertices.ActiveCount];
             for (int j = 0; j < lineLookupTable[i].Length; j++)
             {
                 lineLookupTable[i][j] = null;
             }
         }
         
-        lineLookupTable2 = new ActiveNode<Vector3>[vertices.ActiveCount][];
+        lineLookupTable2 = new ActiveNode<bVertex>[vertices.ActiveCount][];
         for (int i = 0; i < lineLookupTable2.Length; i++)
         {
-            lineLookupTable2[i] = new ActiveNode<Vector3>[vertices.ActiveCount];
+            lineLookupTable2[i] = new ActiveNode<bVertex>[vertices.ActiveCount];
             for (int j = 0; j < lineLookupTable2[i].Length; j++)
             {
                 lineLookupTable2[i][j] = null;
@@ -602,15 +632,16 @@ public class bMesh : MonoBehaviour
     }
 	
 	private int PlaneTriangleIntersection(b_Plane plane, Triangle triangle, 
-        out ActiveNode<Vector3>[] intersection,
+        out ActiveNode<bVertex>[] intersection,
         bool duplicateIntersectionPoints=false,
         bool useSecondLookupTable=false)
 	{
-		intersection = new ActiveNode<Vector3>[3];
+		intersection = new ActiveNode<bVertex>[3];
         intersection[0] = null;intersection[1] = null;intersection[2] = null;
         int nullCount = 0;
         
-        Vector3 vec;        
+        Vector3 vec;
+        float interp;    
         for (int i = 0; i < 3; i++)
         {
             int j = (i + 1) % 3;
@@ -627,14 +658,22 @@ public class bMesh : MonoBehaviour
             {
                 intersection[i] = LineIntersectLookup(vi, vj, !useSecondLookupTable);
             }
-            else if (PlaneSegmentIntersection(plane, triangle.GetVertex(i), triangle.GetVertex(j), out vec) == 1)
+            else if (PlaneSegmentIntersection(plane, triangle.GetVertex(i), triangle.GetVertex(j), out vec, out interp) == 1)
             {
-                intersection[i] = AddVertex(new Vector3(vec.x, vec.y, vec.z), true);
+                bVertex newVert = new bVertex(
+                    new Vector3(vec.x, vec.y, vec.z), 
+                    Vector2.Lerp(triangle.GetUV(i), triangle.GetUV(j), interp)
+                    );
+                    
+                intersection[i] = AddVertex(newVert, true);
                 SetLineIntersect(vi, vj, intersection[i], !useSecondLookupTable);
                 
                 if (duplicateIntersectionPoints)
                 {
-                    AddVertex(new Vector3(vec.x, vec.y, vec.z), true);
+                    AddVertex(new bVertex(
+                            new Vector3(vec.x, vec.y, vec.z), 
+                            Vector2.Lerp(triangle.GetUV(i), triangle.GetUV(j), interp)), 
+                        true);
                 }
             }
             else
@@ -656,12 +695,13 @@ public class bMesh : MonoBehaviour
     // 1 -> single point intersection
     // 2 -> segment is laying on plane, inf. intersections
     private static int PlaneSegmentIntersection(b_Plane plane, Vector3 p1, Vector3 p2, 
-        out Vector3 intersection)
+        out Vector3 intersection, out float interp)
     {
         const float coplanar_margin_err = 0.001f;
 
         // Default intersection to 0,0,0
         intersection = new Vector3(0, 0, 0);
+        interp = -1.0f;
 
         Vector3 line = p2 - p1;
         Vector3 dist = p1 - plane.location;
@@ -681,12 +721,12 @@ public class bMesh : MonoBehaviour
         }
 
         // Non-parallel, check for intersection
-        float intersection_interp = coplanar / parallel;
-        if (intersection_interp < 0 || intersection_interp > 1)
+        interp = coplanar / parallel;
+        if (interp < 0 || interp > 1)
             return 0;
 
         // Intersection calculation
-        intersection = p1 + (intersection_interp * line);
+        intersection = p1 + (interp * line);
 
         return 1;
     }
