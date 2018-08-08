@@ -697,7 +697,7 @@ public class bMesh : MonoBehaviour
     private static int PlaneSegmentIntersection(b_Plane plane, Vector3 p1, Vector3 p2, 
         out Vector3 intersection, out float interp)
     {
-        const float coplanar_margin_err = 0.001f;
+        const float coplanar_margin_err = 0.00001f;
 
         // Default intersection to 0,0,0
         intersection = new Vector3(0, 0, 0);
