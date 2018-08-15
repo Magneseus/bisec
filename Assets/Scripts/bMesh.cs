@@ -94,7 +94,7 @@ public class bMesh : MonoBehaviour
         
         verticesToBeTranslated.Clear();
         
-        if (timeToContract < 0.0f)
+        if (timeToContract <= 0.0f)
         {
             int x = trianglesInBetween.Count;
             for (int i = 0; i < x; i++)
@@ -106,7 +106,7 @@ public class bMesh : MonoBehaviour
             foreach (ActiveNode<bVertex> node in verticesToBeTranslated2)
             {
                 bVertex newVert = node.data.GetCopy();
-                newVert.vertex += translation;
+                newVert.vertex -= translation;
                 ChangeVertex(node, newVert, node.data);
                 //node.data -= translation;
             }
@@ -204,7 +204,8 @@ public class bMesh : MonoBehaviour
             it = it.nextActiveNode;
         }
         
-        if (timeToExpand < 0.0f)
+        
+        if (timeToExpand <= 0.0f)
         {
             foreach (ActiveNode<bVertex> node in verticesToBeTranslated)
             {
