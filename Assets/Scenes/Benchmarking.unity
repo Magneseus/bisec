@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -156,6 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &42100601
 MeshCollider:
@@ -256,6 +257,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &167851769
 MeshCollider:
@@ -343,6 +345,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &230920678
 MeshCollider:
@@ -459,6 +462,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &237826329
 MeshCollider:
@@ -731,6 +735,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &319753967
 MeshCollider:
@@ -831,6 +836,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &337352156
 MeshCollider:
@@ -1064,6 +1070,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &397322029
 MeshCollider:
@@ -1220,6 +1227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 1
   MaxHistoryCount: 5
 --- !u!1 &432514049
 GameObject:
@@ -1358,6 +1366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &455906893
 MeshCollider:
@@ -1458,6 +1467,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &502224487
 MeshCollider:
@@ -1633,6 +1643,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &766028366
 MeshCollider:
@@ -1841,6 +1852,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &832833311
 MeshCollider:
@@ -2027,6 +2039,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &844988566
 MeshCollider:
@@ -2127,6 +2140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &874539526
 MeshCollider:
@@ -2227,6 +2241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &877194265
 MeshCollider:
@@ -2415,6 +2430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &898994319
 MeshCollider:
@@ -2831,6 +2847,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!1 &1202175299
 GameObject:
@@ -2963,6 +2980,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1262560270
 MeshCollider:
@@ -3063,6 +3081,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1307097190
 MeshCollider:
@@ -3219,6 +3238,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!1 &1408490618
 GameObject:
@@ -3263,6 +3283,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1408490621
 MeshCollider:
@@ -3363,6 +3384,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1431431616
 MeshCollider:
@@ -3551,6 +3573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1718837994
 MeshCollider:
@@ -3651,6 +3674,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1723777112
 MeshCollider:
@@ -3751,6 +3775,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1761781319
 MeshCollider:
@@ -3937,6 +3962,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1812783729
 MeshCollider:
@@ -4037,6 +4063,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1839874433
 MeshCollider:
@@ -4276,6 +4303,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1938129244
 MeshCollider:
@@ -4404,6 +4432,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &1948429754
 MeshCollider:
@@ -4504,6 +4533,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &2044324271
 MeshCollider:
@@ -4604,6 +4634,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a61959d84d807439193cf279f75e56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AxisAlignedBisection: 0
   MaxHistoryCount: 5
 --- !u!64 &2071524076
 MeshCollider:

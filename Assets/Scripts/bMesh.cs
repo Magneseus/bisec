@@ -11,7 +11,8 @@ public class bMesh : MonoBehaviour
         public Plane uPlane;
     }
     
-    public int MaxHistoryCount = 5;
+    public bool AxisAlignedBisection = false;
+    public int MaxHistoryCount = 10;
 	
     private ActiveNode<bVertex>[][] lineLookupTable;
     private ActiveNode<bVertex>[][] lineLookupTable2;
@@ -68,8 +69,57 @@ public class bMesh : MonoBehaviour
         
         // Transform translation to local space
         Vector3 translation = this.transform.InverseTransformPoint(bisectPlane2.location) - bisectPlaneLocal.location;
-        Vector3 translationSide = bisectPlaneLocal.location + translation;
-        Vector3 translationSide2 = bisectPlaneLocal2.location - translation;
+        
+        if (AxisAlignedBisection)
+        {
+            Vector3 dif = translation.normalized;
+            dif.x = Mathf.Abs(dif.x);
+            dif.y = Mathf.Abs(dif.y);
+            dif.z = Mathf.Abs(dif.z);
+            
+            // X axis aligned
+            if (dif.x > dif.y && dif.x > dif.z)
+            {
+                translation.y = 0;
+                translation.z = 0;
+                
+                bisectPlaneLocal.normal.y = 0;
+                bisectPlaneLocal.normal.z = 0;
+                bisectPlaneLocal2.normal.y = 0;
+                bisectPlaneLocal2.normal.z = 0;
+                
+                bisectPlaneLocal2.location = bisectPlaneLocal.location + translation;
+            }
+            // Y axis aligned
+            else if (dif.y > dif.z)
+            {
+                translation.x = 0;
+                translation.z = 0;
+                
+                bisectPlaneLocal.normal.x = 0;
+                bisectPlaneLocal.normal.z = 0;
+                bisectPlaneLocal2.normal.x = 0;
+                bisectPlaneLocal2.normal.z = 0;
+                
+                bisectPlaneLocal2.location = bisectPlaneLocal.location + translation;
+            }
+            // Z axis aligned
+            else
+            {
+                translation.x = 0;
+                translation.y = 0;
+                
+                bisectPlaneLocal.normal.x = 0;
+                bisectPlaneLocal.normal.y = 0;
+                bisectPlaneLocal2.normal.x = 0;
+                bisectPlaneLocal2.normal.y = 0;
+                
+                bisectPlaneLocal2.location = bisectPlaneLocal.location + translation;
+            }
+        }
+        
+        Vector3 translationSide = bisectPlaneLocal.location + translation.normalized;
+        Vector3 translationSide2 = bisectPlaneLocal2.location - translation.normalized;
         
         int triangleLen = triangles.ActiveCount;
         int verticesLen = vertices.ActiveCount;
@@ -190,6 +240,44 @@ public class bMesh : MonoBehaviour
 
         // Transform translation to local space
         Vector3 translation = this.transform.InverseTransformPoint(bisectPlane2.location) - bisectPlaneLocal.location;
+        
+        if (AxisAlignedBisection)
+        {
+            Vector3 dif = translation.normalized;
+            dif.x = Mathf.Abs(dif.x);
+            dif.y = Mathf.Abs(dif.y);
+            dif.z = Mathf.Abs(dif.z);
+            
+            // X axis aligned
+            if (dif.x > dif.y && dif.x > dif.z)
+            {
+                translation.y = 0;
+                translation.z = 0;
+                
+                bisectPlaneLocal.normal.y = 0;
+                bisectPlaneLocal.normal.z = 0;
+            }
+            // Y axis aligned
+            else if (dif.y > dif.z)
+            {
+                translation.x = 0;
+                translation.z = 0;
+                
+                bisectPlaneLocal.normal.x = 0;
+                bisectPlaneLocal.normal.z = 0;
+            }
+            // Z axis aligned
+            else
+            {
+                translation.x = 0;
+                translation.y = 0;
+                
+                bisectPlaneLocal.normal.x = 0;
+                bisectPlaneLocal.normal.y = 0;
+            }
+        }
+        
+        
         Vector3 translationSide = bisectPlaneLocal.location + translation;
         
         int triangleLen = triangles.ActiveCount;
