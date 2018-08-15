@@ -123,8 +123,8 @@ GameObject:
   - component: {fileID: 42100599}
   - component: {fileID: 42100603}
   - component: {fileID: 42100602}
-  - component: {fileID: 42100601}
   - component: {fileID: 42100600}
+  - component: {fileID: 42100601}
   m_Layer: 0
   m_Name: Capsule (4)
   m_TagString: Untagged
@@ -223,8 +223,8 @@ GameObject:
   - component: {fileID: 167851767}
   - component: {fileID: 167851771}
   - component: {fileID: 167851770}
-  - component: {fileID: 167851769}
   - component: {fileID: 167851768}
+  - component: {fileID: 167851769}
   m_Layer: 0
   m_Name: Capsule (14)
   m_TagString: Untagged
@@ -323,8 +323,8 @@ GameObject:
   - component: {fileID: 230920681}
   - component: {fileID: 230920680}
   - component: {fileID: 230920679}
-  - component: {fileID: 230920678}
   - component: {fileID: 230920677}
+  - component: {fileID: 230920678}
   m_Layer: 0
   m_Name: Sphere (1)
   m_TagString: Untagged
@@ -426,8 +426,8 @@ GameObject:
   - component: {fileID: 237826327}
   - component: {fileID: 237826331}
   - component: {fileID: 237826330}
-  - component: {fileID: 237826329}
   - component: {fileID: 237826328}
+  - component: {fileID: 237826329}
   m_Layer: 0
   m_Name: Capsule (6)
   m_TagString: Untagged
@@ -533,7 +533,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boltPrefab: {fileID: 1182598532267662, guid: c491f8f789743fa488b6027852d9c2c4, type: 2}
-  timeToMove: 1
+  timeToMove: 0
 --- !u!1 &288588921
 GameObject:
   m_ObjectHideFlags: 0
@@ -698,8 +698,8 @@ GameObject:
   - component: {fileID: 319753965}
   - component: {fileID: 319753969}
   - component: {fileID: 319753968}
-  - component: {fileID: 319753967}
   - component: {fileID: 319753966}
+  - component: {fileID: 319753967}
   m_Layer: 0
   m_Name: Capsule (5)
   m_TagString: Untagged
@@ -798,8 +798,8 @@ GameObject:
   - component: {fileID: 337352154}
   - component: {fileID: 337352158}
   - component: {fileID: 337352157}
-  - component: {fileID: 337352156}
   - component: {fileID: 337352155}
+  - component: {fileID: 337352156}
   m_Layer: 0
   m_Name: Capsule (11)
   m_TagString: Untagged
@@ -1031,8 +1031,8 @@ GameObject:
   - component: {fileID: 397322027}
   - component: {fileID: 397322031}
   - component: {fileID: 397322030}
-  - component: {fileID: 397322029}
   - component: {fileID: 397322028}
+  - component: {fileID: 397322029}
   m_Layer: 0
   m_Name: Capsule (10)
   m_TagString: Untagged
@@ -1150,7 +1150,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 1
+  m_Convex: 0
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -1325,8 +1325,8 @@ GameObject:
   - component: {fileID: 455906891}
   - component: {fileID: 455906895}
   - component: {fileID: 455906894}
-  - component: {fileID: 455906893}
   - component: {fileID: 455906892}
+  - component: {fileID: 455906893}
   m_Layer: 0
   m_Name: Capsule (6)
   m_TagString: Untagged
@@ -1425,8 +1425,8 @@ GameObject:
   - component: {fileID: 502224485}
   - component: {fileID: 502224489}
   - component: {fileID: 502224488}
-  - component: {fileID: 502224487}
   - component: {fileID: 502224486}
+  - component: {fileID: 502224487}
   m_Layer: 0
   m_Name: Capsule (2)
   m_TagString: Untagged
@@ -1613,8 +1613,8 @@ GameObject:
   - component: {fileID: 766028369}
   - component: {fileID: 766028368}
   - component: {fileID: 766028367}
-  - component: {fileID: 766028366}
   - component: {fileID: 766028365}
+  - component: {fileID: 766028366}
   m_Layer: 0
   m_Name: Capsule (1)
   m_TagString: Untagged
@@ -1808,8 +1808,8 @@ GameObject:
   - component: {fileID: 832833309}
   - component: {fileID: 832833313}
   - component: {fileID: 832833312}
-  - component: {fileID: 832833311}
   - component: {fileID: 832833310}
+  - component: {fileID: 832833311}
   m_Layer: 0
   m_Name: Capsule (8)
   m_TagString: Untagged
@@ -1994,8 +1994,8 @@ GameObject:
   - component: {fileID: 844988564}
   - component: {fileID: 844988568}
   - component: {fileID: 844988567}
-  - component: {fileID: 844988566}
   - component: {fileID: 844988565}
+  - component: {fileID: 844988566}
   m_Layer: 0
   m_Name: Sphere (4)
   m_TagString: Untagged
@@ -2094,8 +2094,8 @@ GameObject:
   - component: {fileID: 874539524}
   - component: {fileID: 874539528}
   - component: {fileID: 874539527}
-  - component: {fileID: 874539526}
   - component: {fileID: 874539525}
+  - component: {fileID: 874539526}
   m_Layer: 0
   m_Name: Capsule (3)
   m_TagString: Untagged
@@ -2194,8 +2194,8 @@ GameObject:
   - component: {fileID: 877194263}
   - component: {fileID: 877194267}
   - component: {fileID: 877194266}
-  - component: {fileID: 877194265}
   - component: {fileID: 877194264}
+  - component: {fileID: 877194265}
   m_Layer: 0
   m_Name: Sphere (2)
   m_TagString: Untagged
@@ -2382,8 +2382,8 @@ GameObject:
   - component: {fileID: 898994317}
   - component: {fileID: 898994321}
   - component: {fileID: 898994320}
-  - component: {fileID: 898994319}
   - component: {fileID: 898994318}
+  - component: {fileID: 898994319}
   m_Layer: 0
   m_Name: Capsule (7)
   m_TagString: Untagged
@@ -2930,8 +2930,8 @@ GameObject:
   - component: {fileID: 1262560268}
   - component: {fileID: 1262560272}
   - component: {fileID: 1262560271}
-  - component: {fileID: 1262560270}
   - component: {fileID: 1262560269}
+  - component: {fileID: 1262560270}
   m_Layer: 0
   m_Name: Capsule (2)
   m_TagString: Untagged
@@ -3030,8 +3030,8 @@ GameObject:
   - component: {fileID: 1307097188}
   - component: {fileID: 1307097192}
   - component: {fileID: 1307097191}
-  - component: {fileID: 1307097190}
   - component: {fileID: 1307097189}
+  - component: {fileID: 1307097190}
   m_Layer: 0
   m_Name: Capsule (9)
   m_TagString: Untagged
@@ -3230,8 +3230,8 @@ GameObject:
   - component: {fileID: 1408490619}
   - component: {fileID: 1408490623}
   - component: {fileID: 1408490622}
-  - component: {fileID: 1408490621}
   - component: {fileID: 1408490620}
+  - component: {fileID: 1408490621}
   m_Layer: 0
   m_Name: Sphere (3)
   m_TagString: Untagged
@@ -3330,8 +3330,8 @@ GameObject:
   - component: {fileID: 1431431614}
   - component: {fileID: 1431431618}
   - component: {fileID: 1431431617}
-  - component: {fileID: 1431431616}
   - component: {fileID: 1431431615}
+  - component: {fileID: 1431431616}
   m_Layer: 0
   m_Name: Capsule (13)
   m_TagString: Untagged
@@ -3518,8 +3518,8 @@ GameObject:
   - component: {fileID: 1718837992}
   - component: {fileID: 1718837996}
   - component: {fileID: 1718837995}
-  - component: {fileID: 1718837994}
   - component: {fileID: 1718837993}
+  - component: {fileID: 1718837994}
   m_Layer: 0
   m_Name: Capsule (15)
   m_TagString: Untagged
@@ -3618,8 +3618,8 @@ GameObject:
   - component: {fileID: 1723777110}
   - component: {fileID: 1723777114}
   - component: {fileID: 1723777113}
-  - component: {fileID: 1723777112}
   - component: {fileID: 1723777111}
+  - component: {fileID: 1723777112}
   m_Layer: 0
   m_Name: Capsule (5)
   m_TagString: Untagged
@@ -3718,8 +3718,8 @@ GameObject:
   - component: {fileID: 1761781317}
   - component: {fileID: 1761781321}
   - component: {fileID: 1761781320}
-  - component: {fileID: 1761781319}
   - component: {fileID: 1761781318}
+  - component: {fileID: 1761781319}
   m_Layer: 0
   m_Name: Capsule (12)
   m_TagString: Untagged
@@ -3904,8 +3904,8 @@ GameObject:
   - component: {fileID: 1812783727}
   - component: {fileID: 1812783731}
   - component: {fileID: 1812783730}
-  - component: {fileID: 1812783729}
   - component: {fileID: 1812783728}
+  - component: {fileID: 1812783729}
   m_Layer: 0
   m_Name: Capsule (8)
   m_TagString: Untagged
@@ -4004,8 +4004,8 @@ GameObject:
   - component: {fileID: 1839874431}
   - component: {fileID: 1839874435}
   - component: {fileID: 1839874434}
-  - component: {fileID: 1839874433}
   - component: {fileID: 1839874432}
+  - component: {fileID: 1839874433}
   m_Layer: 0
   m_Name: Capsule (4)
   m_TagString: Untagged
@@ -4256,8 +4256,8 @@ GameObject:
   - component: {fileID: 1938129247}
   - component: {fileID: 1938129246}
   - component: {fileID: 1938129245}
-  - component: {fileID: 1938129244}
   - component: {fileID: 1938129243}
+  - component: {fileID: 1938129244}
   m_Layer: 0
   m_Name: Capsule (2)
   m_TagString: Untagged
@@ -4371,8 +4371,8 @@ GameObject:
   - component: {fileID: 1948429752}
   - component: {fileID: 1948429756}
   - component: {fileID: 1948429755}
-  - component: {fileID: 1948429754}
   - component: {fileID: 1948429753}
+  - component: {fileID: 1948429754}
   m_Layer: 0
   m_Name: Capsule (3)
   m_TagString: Untagged
@@ -4471,8 +4471,8 @@ GameObject:
   - component: {fileID: 2044324269}
   - component: {fileID: 2044324273}
   - component: {fileID: 2044324272}
-  - component: {fileID: 2044324271}
   - component: {fileID: 2044324270}
+  - component: {fileID: 2044324271}
   m_Layer: 0
   m_Name: Capsule (7)
   m_TagString: Untagged
@@ -4571,8 +4571,8 @@ GameObject:
   - component: {fileID: 2071524074}
   - component: {fileID: 2071524078}
   - component: {fileID: 2071524077}
-  - component: {fileID: 2071524076}
   - component: {fileID: 2071524075}
+  - component: {fileID: 2071524076}
   m_Layer: 0
   m_Name: Capsule (16)
   m_TagString: Untagged
