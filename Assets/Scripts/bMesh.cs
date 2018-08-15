@@ -11,7 +11,7 @@ public class bMesh : MonoBehaviour
         public Plane uPlane;
     }
     
-    public bool AxisAlignedBisection = false;
+    public bool AxisAlignedBisection = true;
     public int MaxHistoryCount = 10;
 	
     private ActiveNode<bVertex>[][] lineLookupTable;
