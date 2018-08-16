@@ -61,11 +61,9 @@ public class bMesh : MonoBehaviour
         b_Plane bisectPlaneLocal;
         bisectPlaneLocal.location = this.transform.InverseTransformPoint(bisectPlane.location);
         bisectPlaneLocal.normal = this.transform.InverseTransformDirection(bisectPlane.normal);
-        bisectPlaneLocal.uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
         b_Plane bisectPlaneLocal2;
         bisectPlaneLocal2.location = this.transform.InverseTransformPoint(bisectPlane2.location);
         bisectPlaneLocal2.normal = this.transform.InverseTransformDirection(bisectPlane2.normal);
-        bisectPlaneLocal2.uPlane = new Plane(bisectPlaneLocal2.normal, bisectPlaneLocal2.location);
         
         // Transform translation to local space
         Vector3 translation = this.transform.InverseTransformPoint(bisectPlane2.location) - bisectPlaneLocal.location;
@@ -117,6 +115,9 @@ public class bMesh : MonoBehaviour
                 bisectPlaneLocal2.location = bisectPlaneLocal.location + translation;
             }
         }
+        
+        bisectPlaneLocal.uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
+        bisectPlaneLocal2.uPlane = new Plane(bisectPlaneLocal2.normal, bisectPlaneLocal2.location);
         
         Vector3 translationSide = bisectPlaneLocal.location + translation.normalized;
         Vector3 translationSide2 = bisectPlaneLocal2.location - translation.normalized;
@@ -236,7 +237,6 @@ public class bMesh : MonoBehaviour
         b_Plane bisectPlaneLocal;
         bisectPlaneLocal.location = this.transform.InverseTransformPoint(bisectPlane.location);
         bisectPlaneLocal.normal = this.transform.InverseTransformDirection(bisectPlane.normal);
-        bisectPlaneLocal.uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
 
         // Transform translation to local space
         Vector3 translation = this.transform.InverseTransformPoint(bisectPlane2.location) - bisectPlaneLocal.location;
@@ -277,6 +277,7 @@ public class bMesh : MonoBehaviour
             }
         }
         
+        bisectPlaneLocal.uPlane = new Plane(bisectPlaneLocal.normal, bisectPlaneLocal.location);
         
         Vector3 translationSide = bisectPlaneLocal.location + translation;
         
