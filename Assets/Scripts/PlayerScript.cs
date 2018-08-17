@@ -15,6 +15,8 @@ public class PlayerScript : MonoBehaviour
 	
 	private Stack<List<bMesh>> undoStack;
 	
+	private int bisecLayerMask;
+	
 	// Use this for initialization
 	void Start ()
 	{
@@ -24,6 +26,9 @@ public class PlayerScript : MonoBehaviour
 		coBolt2 = null;
 		
 		undoStack = new Stack<List<bMesh>>();
+		
+		bisecLayerMask = 1 << LayerMask.NameToLayer("Bisec");
+		bisecLayerMask = bisecLayerMask | (1 << LayerMask.NameToLayer("Bisec_Intangible"));
 	}
 	
 	// Update is called once per frame
@@ -32,7 +37,7 @@ public class PlayerScript : MonoBehaviour
 		if (Input.GetMouseButtonDown(0))
 		{
 			RaycastHit hit;
-			if (Physics.Raycast(this.transform.position, transform.TransformDirection(Vector3.forward), out hit))
+			if (Physics.Raycast(this.transform.position, transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, bisecLayerMask))
 			{
 				if (exBolt1 == null)
 				{
@@ -91,7 +96,7 @@ public class PlayerScript : MonoBehaviour
 		if (Input.GetMouseButtonDown(1))
 		{
 			RaycastHit hit;
-			if (Physics.Raycast(this.transform.position, transform.TransformDirection(Vector3.forward), out hit))
+			if (Physics.Raycast(this.transform.position, transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, bisecLayerMask))
 			{
 				if (coBolt1 == null)
 				{
@@ -125,7 +130,7 @@ public class PlayerScript : MonoBehaviour
 						float startTime = Time.realtimeSinceStartup;
 						foreach (bMesh mesh in coGo.GetComponentsInChildren<bMesh>())
 						{
-							mesh.Contract(plane, plane2, timeToMove);
+							mesh.Contract(plane2, plane, timeToMove);
 						}
 					}
 					else
