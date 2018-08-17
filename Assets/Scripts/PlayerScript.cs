@@ -181,5 +181,10 @@ public class PlayerScript : MonoBehaviour
 			coBolt2 = null;
 			coGo = null;
 		}
+		
+		if (Input.GetKeyDown(KeyCode.Escape))
+		{
+			Application.Quit();
+		}
 	}
 }
